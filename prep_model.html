@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Kudzu</title>
+</head>
+<body>
+  <br>
+  Data: <textarea id="data" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234</textarea>
+  <br>
+  <br>
+  <br>
+  <br>
+  Categorical features: <input type="text" id="cats" value='Mackerel'>
+  <br>
+  <br>
+  <br>
+  Continuous features: <input type="text" id="conts" value='Quality'>
+  <br>
+  <br>
+  <br>
+  Response variable: <input type="text" id="resp" value='Price'>
+  <br>
+  <br>
+  <br>
+  <button onclick="prep()">Prep</button>
+  <br>
+  <br>
+  <div id="outputSpace">
+
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+<script>
+function prep() {
+ 
+ cats = document.getElementById("cats").value.split(",")
+ conts = document.getElementById("conts").value.split(",")
+ 
+ resp = document.getElementById("resp").value
+ 
+ data = document.getElementById("data").value
+ data = d3.csvParse(data)
+ 
+ var resps = data.map(function(d) { return +d[resp]; });
+ var meanResp = d3.mean(resps);
+ 
+ model = {"BASE_VALUE": meanResp, "cats":{}, "conts":{}}
+ 
+ for (cat in cats){
+  cat = cats[cat]
+  if (cat!=""){
+   model["cats"][cat] = get_cat_feat(data, cat)
+  }
+ }
+ 
+ for (cont in conts){
+  cont = conts[cont]
+  if (cont!=""){
+   model["conts"][cont] = get_cont_feat(data, cont)
+  }
+ }
+ 
+ console.log(model)
+ 
+ output = JSON.stringify(model)
+ 
+ document.getElementById("outputSpace").innerHTML = output
+}
+
+function get_cat_feat(df, cat, catMinPrev=0.01, defaultValue=1, weightCol=null) {
+  if (weightCol === null) {
+    df.forEach((d) => {
+      d["WEIGHT_COL"] = 1;
+    });
+  } else {
+    df.forEach((d) => {
+      d["WEIGHT_COL"] = d[weightCol];
+    });
+  }
+  
+  const sw = df.reduce((a, b) => a + b["WEIGHT_COL"], 0);
+  
+  console.log(sw)
+  
+  const feat = { "OTHER": defaultValue, "uniques": {} };
+  
+  console.log(feat)
+  
+  const uniqueValues = Array.from(new Set(df.map((d) => d[cat])));
+  
+  console.log(uniqueValues)
+  
+  uniqueValues.forEach((u) => {
+    const filteredData = df.filter((d) => d[cat] === u);
+    const valueSum = filteredData.reduce((a, b) => a + b["WEIGHT_COL"], 0);
+    if (valueSum / sw > catMinPrev) {
+      feat["uniques"][u] = defaultValue;
+    }
+  });
+  
+  return feat;
+}
+
+function get_cont_feat(df, cont, contTargetPts=5, edge=0.01, defaultValue=1, weightCol=null) {
+  if (weightCol === null) {
+    df.forEach((d) => {
+      d["WEIGHT_COL"] = 1;
+    });
+  } else {
+    df.forEach((d) => {
+      d["WEIGHT_COL"] = d[weightCol];
+    });
+  }
+  
+  df = df.filter((d) => !isNaN(d[cont]));
+  
+  const sw = df.reduce((a, b) => a + b["WEIGHT_COL"], 0);
+  
+  const inpts = [];
+  for (let i = 0; i < contTargetPts; i++) {
+    inpts.push(edge + (1 - edge * 2) * i / (contTargetPts - 1));
+  }
+  
+  df = df.sort((a, b) => a[cont] - b[cont]).map((d, i) => ({ ...d, index: i }));
+  
+  let cumsum = 0;
+  df.forEach((d) => {
+    cumsum += d["WEIGHT_COL"];
+    d["CSWC"] = cumsum - df[0]["WEIGHT_COL"];
+  });
+  
+  const pts = [];
+  const feat = [];
+  
+  inpts.forEach((inpt) => {
+    const newpt = Math.min(...df.filter((d) => d["CSWC"] >= inpt * sw).map((d) => d[cont]));
+    if (!pts.includes(newpt)) {
+      pts.push(newpt);
+    }
+  });
+  
+  pts.forEach((pt) => {
+    feat.push([pt, defaultValue]);
+  });
+  
+  return feat;
+}
+
+
+</script>
+</body>
+</html>

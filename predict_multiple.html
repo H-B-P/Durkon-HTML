@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>Kudzu</title>
+</head>
+<body>
+  Model: <input type="text" id="model" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+  <br>
+  <br>
+  Data: <textarea id="data" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>
+  <br>
+  <br>
+  <br>
+  <button onclick="predict()">Predict</button>
+  <br>
+  <br>
+  <div id="outputSpace">
+
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+
+
+<script>
+function predict() {
+ model = document.getElementById("model").value
+ model = JSON.parse(model)
+ data = document.getElementById("data").value
+ console.log(data)
+ data = d3.csvParse(data)
+ 
+ output = data.map(function(d) {
+  d["PREDICTED"] = Math.round(predict_mult(model, d)*1000000)/1000000
+  return d
+ });
+ console.log(output)
+ 
+ output = d3.csvFormat(output)
+ 
+ d3.select("#outputSpace")
+        .append("pre")
+        .text(output);
+}
+function predict_mult(model, inputDict) {
+ pred = model["BASE_VALUE"]
+ if ("cats" in model){
+  for (col in model["cats"]){
+   effectOfCol = get_effect_of_cat_on_single_input(inputDict[col], model['cats'][col])
+   console.log(effectOfCol)
+   pred = pred*effectOfCol
+  }
+ }
+ if ("conts" in model){
+  for (col in model["conts"]){
+   effectOfCol = get_effect_of_cont_on_single_input(inputDict[col], model['conts'][col])
+   console.log(effectOfCol)
+   pred = pred*effectOfCol
+  }
+ }
+ return pred
+}
+
+function get_effect_of_cat_on_single_input(input,cat){
+ if (input in cat["uniques"]){
+  return cat["uniques"][input]
+ }
+ return cat["OTHER"]
+}
+
+function get_effect_of_cont_on_single_input(x, cont){
+ console.log(cont,x)
+ if (x<=cont[0][0]){
+  return cont[0][1]} //everything outside our scope is flat
+ for (var i = 0; i < (cont.length-1); i++){
+  console.log(cont[i], cont[i+1])
+  if (x>=cont[i][0] && x<=cont[i+1][0]){
+   return ((x-cont[i][0])*cont[i+1][1] + (cont[i+1][0]-x)*cont[i][1])/(cont[i+1][0]-cont[i][0])}} //((x-p1)y1 + (p2-x)y2) / (p2 - p1)
+ if (x>=cont[cont.length-1][0]){
+  return cont[cont.length-1][1] //everything outside our scope is flat
+ }
+}
+
+</script>
+</body>
+</html>
