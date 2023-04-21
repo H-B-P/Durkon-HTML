@@ -125,23 +125,30 @@ function get_cont_feat(df, cont, contTargetPts=5, edge=0.01, defaultValue=1, wei
     inpts.push(edge + (1 - edge * 2) * i / (contTargetPts - 1));
   }
   
+  console.log(inpts)
+  
   df = df.sort((a, b) => a[cont] - b[cont]).map((d, i) => ({ ...d, index: i }));
   
   let cumsum = 0;
   df.forEach((d) => {
     cumsum += d["WEIGHT_COL"];
-    d["CSWC"] = cumsum - df[0]["WEIGHT_COL"];
+    d["CSWC"] = cumsum;
   });
   
-  const pts = [];
-  const feat = [];
+  console.log(df)
+  
+  pts = [];
+  feat = [];
   
   inpts.forEach((inpt) => {
-    const newpt = Math.min(...df.filter((d) => d["CSWC"] >= inpt * sw).map((d) => d[cont]));
+    newpt = Math.min(...df.filter((d) => d["CSWC"] >= inpt * sw).map((d) => d[cont]));
+    console.log(newpt)
     if (!pts.includes(newpt)) {
       pts.push(newpt);
     }
   });
+  
+  console.log(pts)
   
   pts.forEach((pt) => {
     feat.push([pt, defaultValue]);
