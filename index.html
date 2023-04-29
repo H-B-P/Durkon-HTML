@@ -7,12 +7,1144 @@
   <title>Kudzu</title>
 </head>
 <body>
-  <a href = "prep_model.html">Prepare model</a>
+  
+  <button onclick="switchToLanding()">Landing Page</button>
+  <button onclick="switchToPrep()">Prepare Model</button>
+  <button onclick="switchToTrain()">Train Model</button>
+  <button onclick="switchToPredictSingle()">Predict With Model (Single Row)</button>
+  <button onclick="switchToPredictMultiple()">Predict With Model (Dataset)</button>
+  
   <br>
-  <a href = "train_model.html">Train model</a>
   <br>
-  <a href = "predict_single.html">Use model to predict (single entry)</a>
-  <br>
-  <a href = "predict_multiple.html">Use model to predict (multiple entries)</a>
+  
+  <div id="LandingPageDiv" style="display:inline">
+   
+   This is the web implementation for Durkon, a library for automatically building transparent predictive models.
+   <br><br>
+   You can use Prepare Model to create a starting model, use Train Model to fit it to a dataset, and use Predict With Model to apply it to new data.
+   <br><br>
+   This is all done server-side, in-browser: information provided stays on your computer the entire time. (This also means you can model while disconnected from the internet.)
+  </div>
+  
+  <div id="PrepPageDiv" style="display:none">
+   <br>
+   Data: <textarea id="prepData" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234</textarea>
+   <br>
+   <br>
+   <br>
+   <br>
+   Categorical features: <input type="text" id="prepCats" value='Mackerel'>
+   <br>
+   <br>
+   <br>
+   Continuous features: <input type="text" id="prepConts" value='Quality'>
+   <br>
+   <br>
+   <br>
+   Response variable: <input type="text" id="prepResp" value='Price'>
+   <br>
+   <br>
+   <br>
+   <button onclick="prep()">Prep</button>
+   <br>
+   <br>
+   <div id="prepOutputSpace">
+   </div>
+  </div>
+  
+  <div id="TrainPageDiv" style="display:none">
+   Model: <input type="text" id="trainModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <br>
+   <br>
+   Data: <textarea id="data" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234&#13;&#10;German,6,4321</textarea>
+   <br>
+   Response variable: <input type="text" id="trainResp" value='Price'>
+   <br>
+   <br>
+   
+   Training rounds: <input type="text" id="nrounds" value='100'>
+   <br>
+   Learning rate: <input type="text" id="lr" value='0.1'>
+   <br>
+   Loss function<select id="loss">
+    <option value="Gamma">Gamma</option>
+    <option value="Poisson">Poisson</option>
+   </select>
+   <br>
+   <button onclick="train()">Train</button>
+   <br>
+   <div id="roundcount"></div>
+   <br>
+   <div id="graphSpace"></div>
+   <br>
+   <div id="outputSpace"></div>
+  </div>
+  
+  <div id="PredictSinglePageDiv" style="display:none">
+   Model: <input type="text" id="predictSingleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <br>
+   <br>
+   <button onclick="create_inputSpace()">Request Inputs</button>
+   <div id="predictSingleInputSpace">
+   </div>
+  
+   <br>
+   <button onclick="predict_single()">Predict</button>
+   <br>
+   <br>
+   <br>
+   <div id="predictSingleEffects"></div>
+   <div id="predictSingleOutput"></div>
+  </div>
+  
+  <div id="PredictMultiplePageDiv" style="display:none">
+   Model: <input type="text" id="predictMultipleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <br>
+   <br>
+   Data: <textarea id="predictMultipleData" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>
+   <br>
+   <br>
+   <br>
+   <button onclick="predict_multiple()">Predict</button>
+   <br>
+   <br>
+   <div id="predictMultipleOutputSpace">
+  </div>
+  
+  <!-- All the external libraries, should be kept here when all else finalized -->
+  
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  
+  <script src="https://unpkg.com/mathjs@11.8.0/lib/browser/math.js"></script>
+  
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  
+  <script>
+  
+  //Switch between modes.
+  
+  function switchToLanding(){
+   document.getElementById('LandingPageDiv').style.display = "inline"
+   document.getElementById('PrepPageDiv').style.display = "none"
+   document.getElementById('TrainPageDiv').style.display = "none"
+   document.getElementById('PredictSinglePageDiv').style.display = "none"
+   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+  }
+  function switchToPrep(){
+   document.getElementById('LandingPageDiv').style.display = "none"
+   document.getElementById('PrepPageDiv').style.display = "inline"
+   document.getElementById('TrainPageDiv').style.display = "none"
+   document.getElementById('PredictSinglePageDiv').style.display = "none"
+   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+  }
+  function switchToTrain(){
+   document.getElementById('LandingPageDiv').style.display = "none"
+   document.getElementById('PrepPageDiv').style.display = "none"
+   document.getElementById('TrainPageDiv').style.display = "inline"
+   document.getElementById('PredictSinglePageDiv').style.display = "none"
+   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+  }
+  function switchToPredictSingle(){
+   document.getElementById('LandingPageDiv').style.display = "none"
+   document.getElementById('PrepPageDiv').style.display = "none"
+   document.getElementById('TrainPageDiv').style.display = "none"
+   document.getElementById('PredictSinglePageDiv').style.display = "inline"
+   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+  }
+  function switchToPredictMultiple(){
+   document.getElementById('LandingPageDiv').style.display = "none"
+   document.getElementById('PrepPageDiv').style.display = "none"
+   document.getElementById('TrainPageDiv').style.display = "none"
+   document.getElementById('PredictSinglePageDiv').style.display = "none"
+   document.getElementById('PredictMultiplePageDiv').style.display = "inline"
+  }
+  
+  //Functions for Prep
+  
+  function prep() {
+   
+   cats = document.getElementById("prepCats").value.split(",")
+   conts = document.getElementById("prepConts").value.split(",")
+   
+   resp = document.getElementById("prepResp").value
+   
+   data = document.getElementById("prepData").value
+   data = d3.csvParse(data)
+   
+   var resps = data.map(function(d) { return +d[resp]; });
+   var meanResp = d3.mean(resps);
+   
+   model = {"BASE_VALUE": meanResp, "cats":{}, "conts":{}}
+   
+   for (cat in cats){
+    cat = cats[cat]
+    if (cat!=""){
+     model["cats"][cat] = get_cat_feat(data, cat)
+    }
+   }
+   
+   for (cont in conts){
+    cont = conts[cont]
+    if (cont!=""){
+     model["conts"][cont] = get_cont_feat(data, cont)
+    }
+   }
+   
+   console.log(model)
+   
+   output = JSON.stringify(model)
+   
+   document.getElementById("prepOutputSpace").innerHTML = output
+  }
+
+  function get_cat_feat(df, cat, catMinPrev=0.01, defaultValue=1, weightCol=null) {
+    if (weightCol === null) {
+      df.forEach((d) => {
+        d["WEIGHT_COL"] = 1;
+      });
+    } else {
+      df.forEach((d) => {
+        d["WEIGHT_COL"] = d[weightCol];
+      });
+    }
+    
+    const sw = df.reduce((a, b) => a + b["WEIGHT_COL"], 0);
+    
+    console.log(sw)
+    
+    const feat = { "OTHER": defaultValue, "uniques": {} };
+    
+    console.log(feat)
+    
+    const uniqueValues = Array.from(new Set(df.map((d) => d[cat])));
+    
+    console.log(uniqueValues)
+    
+    uniqueValues.forEach((u) => {
+      const filteredData = df.filter((d) => d[cat] === u);
+      const valueSum = filteredData.reduce((a, b) => a + b["WEIGHT_COL"], 0);
+      if (valueSum / sw > catMinPrev) {
+        feat["uniques"][u] = defaultValue;
+      }
+    });
+    
+    return feat;
+  }
+
+  function get_cont_feat(df, cont, contTargetPts=5, edge=0.01, defaultValue=1, weightCol=null) {
+    if (weightCol === null) {
+      df.forEach((d) => {
+        d["WEIGHT_COL"] = 1;
+      });
+    } else {
+      df.forEach((d) => {
+        d["WEIGHT_COL"] = d[weightCol];
+      });
+    }
+    
+    df = df.filter((d) => !isNaN(d[cont]));
+    
+    const sw = df.reduce((a, b) => a + b["WEIGHT_COL"], 0);
+    
+    const inpts = [];
+    for (let i = 0; i < contTargetPts; i++) {
+      inpts.push(edge + (1 - edge * 2) * i / (contTargetPts - 1));
+    }
+    
+    console.log(inpts)
+    
+    df = df.sort((a, b) => a[cont] - b[cont]).map((d, i) => ({ ...d, index: i }));
+    
+    let cumsum = 0;
+    df.forEach((d) => {
+      cumsum += d["WEIGHT_COL"];
+      d["CSWC"] = cumsum;
+    });
+    
+    console.log(df)
+    
+    pts = [];
+    feat = [];
+    
+    inpts.forEach((inpt) => {
+      newpt = Math.min(...df.filter((d) => d["CSWC"] >= inpt * sw).map((d) => d[cont]));
+      console.log(newpt)
+      if (!pts.includes(newpt)) {
+        pts.push(newpt);
+      }
+    });
+    
+    console.log(pts)
+    
+    pts.forEach((pt) => {
+      feat.push([pt, defaultValue]);
+    });
+    
+    return feat;
+  }
+  
+  //Functions for Train
+  
+  leeway=0.05
+  defaultValue=1
+  targetSpan=0.5
+
+  function prep_graphSpace(model){
+   if ("cats" in model){
+    for (col in model["cats"]){
+     console.log(col)
+     
+     document.getElementById("graphSpace").innerHTML += "<br>"
+     document.getElementById("graphSpace").innerHTML += '<div id="plot_'+col+'"></div>'
+     document.getElementById("graphSpace").innerHTML += "<br>"
+     document.getElementById("graphSpace").innerHTML += '<div id="input_'+col+'"></div>'
+     
+    }
+   }
+   if ("conts" in model){
+    for (col in model["conts"]){
+     console.log(col)
+     
+     document.getElementById("graphSpace").innerHTML += "<br>"
+     document.getElementById("graphSpace").innerHTML += '<div id="plot_'+col+'"></div>'
+     document.getElementById("graphSpace").innerHTML += "<br>"
+     document.getElementById("graphSpace").innerHTML += '<div id="input_'+col+'"></div>'
+    }
+   }
+  }
+
+  function create_graphSpace(){
+   model = document.getElementById("model").value
+   model = JSON.parse(model)
+   document.getElementById("graphSpace").innerHTML = ""
+   prep_graphSpace(model)//.then(function(){
+    
+    
+    if ("cats" in model){
+     for (col in model["cats"]){
+      console.log(col)
+      
+      var xList = []
+      var yList = []
+      
+      for (k in model["cats"][col]["uniques"]){
+       xList.push(k)
+       yList.push(model["cats"][col]["uniques"][k])
+      }
+      if (model["cats"][col].hasOwnProperty("OTHER")){
+       xList.push("OTHER")
+       yList.push(model["cats"][col]["OTHER"])
+      }
+      
+      var plotdata = [
+      {
+       x: xList,
+       y: yList,
+       type: 'bar'
+      }
+      ]
+      
+      var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+      
+      Plotly.newPlot("plot_"+col, plotdata, layout)
+      
+     }
+    }
+    if ("conts" in model){
+     for (col in model["conts"]){
+      console.log(col)
+      
+      
+      var xList = []
+      var yList = []
+      
+      for (k in model["conts"][col]){
+       xList.push(model["conts"][col][k][0])
+       yList.push(model["conts"][col][k][1])
+      }
+      
+      
+      var plotdata = [
+      {
+       x: xList,
+       y: yList,
+       type: 'scatter',
+       mode: 'lines+markers'
+      }
+      ]
+      
+      var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+      
+     }
+    }
+  }
+
+  function update_graphs(model) {
+   
+   if ("cats" in model){
+    for (col in model["cats"]){
+     
+     var xList = []
+     var yList = []
+     
+     
+     for (k in model["cats"][col]["uniques"]){
+      xList.push(k)
+      yList.push(model["cats"][col]["uniques"][k])
+     }
+     if (model["cats"][col].hasOwnProperty("OTHER")){
+      xList.push("OTHER")
+      yList.push(model["cats"][col]["OTHER"])
+     }
+     
+     var plotdata = [
+     {
+      x: xList,
+      y: yList,
+      type: 'bar',
+      name: 'Multipliers'
+     }
+     ]
+     
+     var layout = {
+     title: 'PDP for '+col,
+     xaxis: {
+      title: col,
+     },
+     yaxis: {
+      title: 'Multiplier',
+      range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+     },
+     
+     height: 600,
+     width: 800
+     };
+     
+     Plotly.react("plot_"+col, plotdata, layout)
+     
+     pred = pred*effectOfCol
+    }
+   }
+   if ("conts" in model){
+    for (col in model["conts"]){
+     
+     console.log(effectOfCol)
+     
+     var xList = []
+     var yList = []
+     
+     for (k in model["conts"][col]){
+      xList.push(model["conts"][col][k][0])
+      yList.push(model["conts"][col][k][1])
+     }
+     
+     var plotdata = [
+     {
+      x: xList,
+      y: yList,
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Multipliers'
+     }
+     ]
+     
+     var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+     
+     Plotly.react("plot_"+col, plotdata, layout)
+     
+    }
+   }
+  }
+
+
+  function getSortedKeys(obj) {
+    const keys = Object.keys(obj);
+    keys.sort();
+    return keys;
+  }
+
+  function produce_cont_relevances(inputSeries, cont) { //Note: assumes inputSeries is an array.
+    const reles = math.zeros([cont.length + 1, inputSeries.length]);
+    
+    for (p in inputSeries){
+     if (inputSeries[p] < cont[0][0]){
+      reles[0][p] = 1
+     }
+    }
+    
+    for (let i = 0; i < (cont.length - 1); i++) {
+      x1 = cont[i][0];
+      x2 = cont[i + 1][0];
+      
+      for (p in inputSeries){
+       x = inputSeries[p]
+       if (x>=x1 && x<=x2){
+        reles[i][p] = (x2 - x)/(x2 - x1)
+        reles[i+1][p] = (x - x1)/(x2 - x1)
+       }
+      }
+    }
+    
+    for (p in inputSeries){
+     if (inputSeries[p] > cont[cont.length-1][0]){
+      reles[cont.length-1][p] = 1
+     }
+    }
+    
+    for (p in inputSeries){
+      s = math.sum(math.subset(reles, math.index(math.range(0, cont.length), Number(p))));
+      reles[cont.length][p] = 1-s
+    }
+    
+    return math.transpose(reles); // roundabout way of doing this but the rest of the function doesn't flow as naturally if x and y don't switch places
+  }
+
+  function produce_cont_relevances_dict(inputDf, model){
+   opDict = {}
+   
+   
+   if ("conts" in model){
+    for (col in model["conts"]){
+     inputSeries = inputDf.map(d => d[col])
+     opDict[col]=produce_cont_relevances(inputSeries, model['conts'][col])
+    }
+   }
+   return opDict
+  }
+
+  function produce_cat_relevances(inputSeries, cat) {
+    
+    skeys = getSortedKeys(cat["uniques"]);
+    
+    reles = math.zeros([skeys.length + 1, inputSeries.length]);
+    
+    for (i = 0; i < skeys.length; i++) {
+     for (p in inputSeries){
+      if (inputSeries[p]===skeys[i]){
+       reles[i][p] = 1; //d(featpred)/d(pt)
+      }
+     }
+    }
+    
+    for (p in inputSeries){
+      s = math.sum(math.subset(reles, math.index(math.range(0, skeys.length), Number(p))));
+      reles[skeys.length][p] = 1-s
+    }
+    
+    return math.transpose(reles); // roundabout way of doing this but the rest of the function doesn't flow as naturally if x and y don't switch places
+  }
+
+  function produce_cat_relevances_dict(inputDf, model){
+   opDict = {}
+   
+   if ("cats" in model){
+    for (col in model["cats"]){
+     inputSeries = inputDf.map(d => d[col])
+     opDict[col]=produce_cat_relevances(inputSeries, model['cats'][col])
+    }
+   }
+   
+   return opDict
+  }
+
+  function get_effect_of_this_cont_col_from_relevances(reles, model, col, defaultValue=1) {
+    let postmultmat = [];
+    for (let pt of model["conts"][col]) {
+      postmultmat.push(pt[1]);
+    }
+    postmultmat.push(defaultValue);
+    return math.multiply(reles, postmultmat);
+  }
+
+  function get_effects_of_cont_cols_from_relevance_dict(releDict, model) {
+    let opDict = {};
+    if ("conts" in model) {
+      for (let col in model["conts"]) {
+        opDict[col] = get_effect_of_this_cont_col_from_relevances(releDict[col], model, col);
+      }
+    }
+    return opDict;
+  }
+
+  function get_effect_of_this_cat_col_from_relevances(reles, model, col) {
+    let skeys = getSortedKeys(model['cats'][col]["uniques"]);
+    let postmultmat = [];
+    for (let key of skeys) {
+      postmultmat.push(model["cats"][col]["uniques"][key]);
+    }
+    postmultmat.push(model["cats"][col]["OTHER"]);
+    return math.multiply(reles, postmultmat);
+  }
+
+  function get_effects_of_cat_cols_from_relevance_dict(releDict, model) {
+    let opDict = {};
+    if ("cats" in model) {
+      for (let col in model["cats"]) {
+        opDict[col] = get_effect_of_this_cat_col_from_relevances(releDict[col], model, col);
+      }
+    }
+    return opDict;
+  }
+
+  function sum_and_listify_matrix(a) {
+    return a.reduce((acc, val) => acc.map((x, i) => x + val[i]));
+  }
+
+  function produce_total_relevances_dict(contReleDict, catReleDict) {
+    let op = { "conts": {}, "cats": {} };
+    for (let col in contReleDict) {
+      op["conts"][col] = sum_and_listify_matrix(contReleDict[col]);
+    }
+    for (let col in catReleDict) {
+      op["cats"][col] = sum_and_listify_matrix(catReleDict[col]);
+    }
+    return op;
+  }
+
+  function comb_from_effects_mult(base,l,contEffs,catEffs){
+   op = new Array(l).fill(base)
+   
+   for (col in contEffs){
+    op = math.dotMultiply(op,contEffs[col])
+    
+   }
+   for (col in catEffs){
+    op = math.dotMultiply(op,catEffs[col])
+   }
+   
+   return op
+  }
+
+  function Gauss_grad(pred,act){
+   return math.multiply(2,math.subtract(pred-act))
+  }
+
+  function Poisson_grad(pred,act){
+   return math.dotDivide(math.subtract(pred,act),pred)
+  }
+
+  function Gamma_grad(pred,act){
+   return math.dotDivide(math.subtract(pred,act),math.dotMultiply(pred,pred))
+  }
+
+  function lossgrad(pred,act){
+   console.log(pred, act)
+   lf = document.getElementById("loss").value
+   console.log(lf)
+   if (lf==="Gamma"){
+   return Gamma_grad(pred,act)
+   }
+   if (lf==="Poisson"){
+   return Poisson_grad(pred,act)
+   }
+  }
+
+  function train(){
+   model = document.getElementById("trainModel").value
+   model = JSON.parse(model)
+   
+   target = document.getElementById("trainResp").value
+   nrounds = document.getElementById("nrounds").value
+   lr = document.getElementById("lr").value
+   
+   data = document.getElementById("data").value
+   data = d3.csvParse(data)
+   
+   document.getElementById("outputSpace").innerHTML = "Preparing . . ."
+   
+   create_graphSpace()
+   
+   train_model(data, target, nrounds, lr, model)
+  }
+
+  function train_model(inputDf, target, nrounds, lr, model){
+   cord = produce_cont_relevances_dict(inputDf,model) //d(feat)/d(pt)
+   card = produce_cat_relevances_dict(inputDf,model) //d(feat)/d(pt)
+   
+   tord = produce_total_relevances_dict(cord, card)
+   
+   resp = inputDf.map(d => d[target])
+   
+   i=0
+   
+   function train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,resp){
+    if (i==nrounds){
+     document.getElementById("roundcount").innerHTML = String(nrounds)+"/"+String(nrounds)
+     document.getElementById("outputSpace").innerHTML = JSON.stringify(model)
+     console.log(model)
+    }
+    else{
+     document.getElementById("roundcount").innerHTML = String(i)+"/"+String(nrounds)
+    document.getElementById("outputSpace").innerHTML = JSON.stringify(model)
+    console.log(model)
+    
+    contEffects = get_effects_of_cont_cols_from_relevance_dict(cord,model)
+    catEffects = get_effects_of_cat_cols_from_relevance_dict(card,model)
+    
+    pred = comb_from_effects_mult(model["BASE_VALUE"], contEffects.length, contEffects, catEffects)
+    
+    lossgradient = lossgrad(pred, resp)
+    
+    if ("conts" in model){
+     for (col in model["conts"]){
+      effectOfCol = contEffects[col]
+      ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
+      
+      finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),cord[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
+      
+      for (k in model['conts'][col]){
+       totRele = tord["conts"][col][k]
+       if (totRele>0){
+        model["conts"][col][k][1] -= finalGradients[k]*lr/totRele
+       }
+      }
+     }
+    }
+    
+    if ("cats" in model){
+     for (col in model["cats"]){
+      
+      effectOfCol = catEffects[col]
+      ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
+      finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),card[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
+      
+      skeys = getSortedKeys(model['cats'][col]["uniques"])
+      
+      for (k in skeys){
+       totRele = tord["cats"][col][k]
+       
+       
+       
+       if (totRele>0){
+        model["cats"][col]["uniques"][skeys[k]] -= finalGradients[k]*lr/totRele
+       }
+      }
+      
+      totRele = tord["cats"][col][tord["cats"][col].length-1]
+      if (totRele>0){
+       model["cats"][col]["OTHER"] -= finalGradients[finalGradients.length-1]*lr/totRele
+      }
+     }
+    }
+    update_graphs(model)
+     
+     i++
+     setTimeout(train_one_step, 0, inputDf, target,nrounds,lr,model, i,cord,card,tord,resp)
+     }
+    }
+    train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,resp)
+  }
+  
+  //Functions for Predict
+  
+  function range(r){
+   return Array(r).fill(1).map((x, y) => x + y - 1)
+  }
+
+  leeway=0.05
+  defaultValue=1
+  targetSpan=0.5
+
+
+  function prep_inputSpace(model){
+   if ("cats" in model){
+    for (col in model["cats"]){
+     console.log(col)
+     
+     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
+     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="plot_'+col+'"></div>'
+     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
+     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="input_'+col+'"></div>'
+     
+    }
+   }
+   if ("conts" in model){
+    for (col in model["conts"]){
+     console.log(col)
+     
+     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
+     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="plot_'+col+'"></div>'
+     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
+     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="input_'+col+'"></div>'
+    }
+   }
+  }
+
+  function create_inputSpace(){
+   model = document.getElementById("predictSingleModel").value
+   model = JSON.parse(model)
+   document.getElementById("predictSingleInputSpace").innerHTML = ""
+   prep_inputSpace(model)//.then(function(){
+    
+    
+    if ("cats" in model){
+     for (col in model["cats"]){
+      console.log(col)
+      
+      var xList = []
+      var yList = []
+      
+      for (k in model["cats"][col]["uniques"]){
+       xList.push(k)
+       yList.push(model["cats"][col]["uniques"][k])
+      }
+      if (model["cats"][col].hasOwnProperty("OTHER")){
+       xList.push("OTHER")
+       yList.push(model["cats"][col]["OTHER"])
+      }
+      
+      var plotdata = [
+      {
+       x: xList,
+       y: yList,
+       type: 'bar'
+      }
+      ]
+      
+      var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+      
+      Plotly.newPlot("plot_"+col, plotdata, layout)
+      
+      //Plotly.toImage("plot_"+col, {format: 'png', width: 600, height: 400}).then(function(url){
+      // console.log("hurgus")
+      // document.getElementById("inputSpace").innerHTML += '<img src="'+url+'">'
+      // console.log("burgus")
+      //})
+      
+      //document.getElementById("plot_"+col).innerHTML = ""
+      
+      
+      document.getElementById("input_"+col).innerHTML += ""+col
+      document.getElementById("input_"+col).innerHTML += ': <input type="text" id="dat_'+col+'">'
+     }
+    }
+    if ("conts" in model){
+     for (col in model["conts"]){
+      console.log(col)
+      //document.getElementById("inputSpace").innerHTML += "<br>"
+      //document.getElementById("inputSpace").innerHTML += '<div id="plot_'+col+'" style="z-index: 9999;"></div>'
+      
+      
+      var xList = []
+      var yList = []
+      
+      for (k in model["conts"][col]){
+       xList.push(model["conts"][col][k][0])
+       yList.push(model["conts"][col][k][1])
+      }
+      
+      
+      var plotdata = [
+      {
+       x: xList,
+       y: yList,
+       type: 'scatter',
+       mode: 'lines+markers'
+      }
+      ]
+      
+      var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+      
+      Plotly.newPlot("plot_"+col, plotdata, layout)
+      //Plotly.toImage("plot_"+col, {format: 'png', width: 600, height: 400}).then(function(url){
+      // document.getElementById("inputSpace").innerHTML += '<img src="'+url+'">'
+      //})
+      
+      
+      //document.getElementById("plot_"+col).innerHTML = ""
+      
+      document.getElementById("input_"+col).innerHTML += ""+col
+      document.getElementById("input_"+col).innerHTML += ': <input type="number" id="dat_'+col+'">'
+     }
+    }
+   //})
+   //console.log(document.getElementById("inputSpace").innerHTML)
+  }
+
+  function predict_single() {
+   model = document.getElementById("predictSingleModel").value
+   model = JSON.parse(model)
+   console.log('m',model)
+   ipd = {}
+   console.log(document.getElementById("predictSingleInputSpace").innerHTML)
+   if ("cats" in model){
+    for (col in model["cats"]){
+     ipd[col] = document.getElementById("dat_"+col).value
+    }
+   }
+   if ("conts" in model){
+    for (col in model["conts"]){
+     ipd[col] = parseFloat(document.getElementById("dat_"+col).value)
+    }
+   }
+   console.log(ipd)
+   p = predict_mult_flashily(model, ipd)
+   
+   document.getElementById("predictSingleOutput").innerHTML = Math.round(p*100)/100
+   console.log('p',p)
+  }
+
+  function predict_mult(model, inputDict) {
+   pred = model["BASE_VALUE"]
+   if ("cats" in model){
+    for (col in model["cats"]){
+     effectOfCol = get_effect_of_cat_on_single_input(inputDict[col], model['cats'][col])
+     console.log(effectOfCol)
+     pred = pred*effectOfCol
+    }
+   }
+   if ("conts" in model){
+    for (col in model["conts"]){
+     effectOfCol = get_effect_of_cont_on_single_input(inputDict[col], model['conts'][col])
+     console.log(effectOfCol)
+     pred = pred*effectOfCol
+    }
+   }
+   return pred
+  }
+
+  function predict_mult_flashily(model, inputDict) {
+   pred = model["BASE_VALUE"]
+   
+   document.getElementById("predictSingleEffects").innerHTML = ""+model["BASE_VALUE"]+ " * "
+   
+   if ("cats" in model){
+    for (col in model["cats"]){
+     
+     effectOfCol = get_effect_of_cat_on_single_input(inputDict[col], model['cats'][col])
+     
+     document.getElementById("predictSingleEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
+     
+     
+     var xList = []
+     var yList = []
+     
+     if (inputDict[col] in model['cats'][col]["uniques"]){
+      xOfCol = inputDict[col]
+     }
+     else{
+      xOfCol = "OTHER"
+     }
+     
+     
+     for (k in model["cats"][col]["uniques"]){
+      xList.push(k)
+      yList.push(model["cats"][col]["uniques"][k])
+     }
+     if (model["cats"][col].hasOwnProperty("OTHER")){
+      xList.push("OTHER")
+      yList.push(model["cats"][col]["OTHER"])
+     }
+     
+     var plotdata = [
+     {
+      x: xList,
+      y: yList,
+      type: 'bar',
+      name: 'Multipliers'
+     },
+     {
+      x:[xOfCol],
+      y:[effectOfCol],
+      type: 'scatter',
+      mode: 'markers',
+      name: 'Effect on prediction',
+      marker: {
+        color: 'red',
+        symbol: 'square',
+        size: 10
+      }
+     }
+     ]
+     
+     var layout = {
+     title: 'PDP for '+col,
+     xaxis: {
+      title: col,
+     },
+     yaxis: {
+      title: 'Multiplier',
+      range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+     },
+     
+     height: 600,
+     width: 800
+     };
+     
+     Plotly.react("plot_"+col, plotdata, layout)
+     
+     console.log(effectOfCol)
+     pred = pred*effectOfCol
+    }
+   }
+   if ("conts" in model){
+    for (col in model["conts"]){
+     
+     effectOfCol = get_effect_of_cont_on_single_input(inputDict[col], model['conts'][col])
+     
+     document.getElementById("predictSingleEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
+     
+     console.log(effectOfCol)
+     
+     var xList = []
+     var yList = []
+     
+     for (k in model["conts"][col]){
+      xList.push(model["conts"][col][k][0])
+      yList.push(model["conts"][col][k][1])
+     }
+     
+     var plotdata = [
+     {
+      x: xList,
+      y: yList,
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Multipliers'
+     },
+     {
+      x:[inputDict[col]],
+      y:[effectOfCol],
+      type: 'scatter',
+      mode: 'markers',
+      name: 'Effect on prediction',
+      marker: {
+        color: 'red',
+        symbol: 'square',
+        size: 10
+      }
+     }
+     ]
+     
+     var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+     
+     Plotly.react("plot_"+col, plotdata, layout)
+     
+     pred = pred*effectOfCol
+    }
+   }
+   
+   document.getElementById("predictSingleEffects").innerHTML = document.getElementById("predictSingleEffects").innerHTML.slice(0,-3) + " = "
+   
+   return pred
+  }
+
+  function get_effect_of_cat_on_single_input(input,cat){
+   if (input in cat["uniques"]){
+    return cat["uniques"][input]
+   }
+   return cat["OTHER"]
+  }
+
+  function get_effect_of_cont_on_single_input(x, cont){
+   console.log(cont,x)
+   if (x<=cont[0][0]){
+    return cont[0][1]} //everything outside our scope is flat
+   for (var i = 0; i < (cont.length-1); i++){
+    console.log(cont[i], cont[i+1])
+    if (x>=cont[i][0] && x<=cont[i+1][0]){
+     return ((x-cont[i][0])*cont[i+1][1] + (cont[i+1][0]-x)*cont[i][1])/(cont[i+1][0]-cont[i][0])}} //((x-p1)y1 + (p2-x)y2) / (p2 - p1)
+   if (x>=cont[cont.length-1][0]){
+    return cont[cont.length-1][1] //everything outside our scope is flat
+   }
+  }
+    
+  //Functions for Predict (Multiple)
+  
+  function predict_multiple() {
+   model = document.getElementById("predictMultipleModel").value
+   model = JSON.parse(model)
+   data = document.getElementById("predictMultipleData").value
+   console.log(data)
+   data = d3.csvParse(data)
+   
+   output = data.map(function(d) {
+    d["PREDICTED"] = Math.round(predict_mult(model, d)*1000000)/1000000
+    return d
+   });
+   console.log(output)
+   
+   output = d3.csvFormat(output)
+   
+   d3.select("#predictMultipleOutputSpace")
+          .append("pre")
+          .text(output);
+  }
+  
+  
+  </script>
+  
 </body>
 </html>
