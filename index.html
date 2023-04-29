@@ -4,7 +4,45 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <title>Kudzu</title>
+  <title>HTML Durkon</title>
+  
+  <style>
+  /* Tooltip container */
+  .tooltip {
+    position: relative;
+    display: inline-block;
+    border-bottom: 1px dotted black; /* If you want dots under the hoverable text */
+  }
+
+  /* Tooltip text */
+  .tooltip .tooltiptext {
+    visibility: hidden;
+    width: 480px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    padding: 5px 5px;
+    border-radius: 6px;
+
+    /* Position the tooltip text */
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    /* margin-left: -60px; */
+
+    /* Fade in tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  /* Show the tooltip text when you mouse over the tooltip container */
+  .tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+  } 
+  </style>
+  
 </head>
 <body>
   
@@ -24,49 +62,45 @@
    You can use Prepare Model to create a starting model, use Train Model to fit it to a dataset, and use Predict With Model to apply it to new data.
    <br><br>
    This is all done server-side, in-browser: information provided stays on your computer the entire time. (This also means you can model while disconnected from the internet.)
+   <br>
+   <br>
+   <br>
+   NOTE: The (far more powerful) Python library this is based off is <a href = "https://www.github.com/H-B-P/DURKON">here</a>; a demo showing how to get started using it is <a href = "https://www.github.com/H-B-P/Durkon-demo-II">here</a>.
   </div>
   
   <div id="PrepPageDiv" style="display:none">
    <br>
-   Data: <textarea id="prepData" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234</textarea>
+    <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="prepData" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234</textarea>
    <br>
    <br>
    <br>
-   <br>
-   Categorical features: <input type="text" id="prepCats" value='Mackerel'>
-   <br>
-   <br>
-   <br>
-   Continuous features: <input type="text" id="prepConts" value='Quality'>
-   <br>
-   <br>
-   <br>
-   Response variable: <input type="text" id="prepResp" value='Price'>
-   <br>
-   <br>
-   <br>
+   <span class="tooltip">Categorical features<span class="tooltiptext">Predictive features which are expressed as categories: things like "Species", "Genre", or "Manufacturer_of_Car". List them with a comma between each feature name, and no spaces.</span></span>: <input type="text" id="prepCats" value='Mackerel'>
+   <br><br>
+   <span class="tooltip">Continuous features<span class="tooltiptext">Predictive features which are expressed as quantities: things like "Height", "Page_Count", or "Age_of_Driver". List them with a comma between each feature name, and no spaces.</span></span>: <input type="text" id="prepConts" value='Quality'>
+   <br><br>
+   <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="prepResp" value='Price'>
+   <br><br>
    <button onclick="prep()">Prep</button>
-   <br>
-   <br>
+   <br><br>
    <div id="prepOutputSpace">
    </div>
   </div>
   
   <div id="TrainPageDiv" style="display:none">
-   Model: <input type="text" id="trainModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to train. You can get an untrained model of the right format from Prepare Model.</span></span>: <input type="text" id="trainModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
    <br>
    <br>
-   Data: <textarea id="data" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234&#13;&#10;German,6,4321</textarea>
+   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="data" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234&#13;&#10;German,6,4321</textarea>
    <br>
-   Response variable: <input type="text" id="trainResp" value='Price'>
+   <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="trainResp" value='Price'>
    <br>
    <br>
-   
-   Training rounds: <input type="text" id="nrounds" value='100'>
    <br>
-   Learning rate: <input type="text" id="lr" value='0.1'>
-   <br>
-   Loss function<select id="loss">
+   <span class="tooltip">Training rounds<span class="tooltiptext">The number of iterations you want the training algorithm to run for. More rounds are almost always better, but A) more rounds take longer to run, B) returns to adding more rounds diminish sharply, and C) overtraining makes it more likely that you'll overfit to the training data.</span></span>: <input type="text" id="nrounds" value='100'>
+   <br><br>
+   <span class="tooltip">Learning rate<span class="tooltiptext">The rate at which the model is trained. If training takes too long, try increasing this value; if you get crashes or other odd behaviour, try decreasing it. Note that the optimal value here will vary for different loss functions.</span></span>: <input type="text" id="lr" value='0.1'>
+   <br><br>
+   <span class="tooltip">Loss function<span class="tooltiptext">The error distribution the model uses to decide which mis-predictions are most important to correct. Convention is to use Gamma when predicting the price of something, and Poisson when predicting how many times something will happen in a given timespan.</span></span><select id="loss">
     <option value="Gamma">Gamma</option>
     <option value="Poisson">Poisson</option>
    </select>
@@ -81,7 +115,7 @@
   </div>
   
   <div id="PredictSinglePageDiv" style="display:none">
-   Model: <input type="text" id="predictSingleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictSingleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
    <br>
    <br>
    <button onclick="create_inputSpace()">Request Inputs</button>
@@ -98,10 +132,10 @@
   </div>
   
   <div id="PredictMultiplePageDiv" style="display:none">
-   Model: <input type="text" id="predictMultipleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictMultipleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
    <br>
    <br>
-   Data: <textarea id="predictMultipleData" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>
+   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="predictMultipleData" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>
    <br>
    <br>
    <br>
