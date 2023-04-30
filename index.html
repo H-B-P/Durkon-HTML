@@ -49,8 +49,7 @@
   <button onclick="switchToLanding()">Landing Page</button>
   <button onclick="switchToPrep()">Prepare Model</button>
   <button onclick="switchToTrain()">Train Model</button>
-  <button onclick="switchToPredictSingle()">Predict With Model (Single Row)</button>
-  <button onclick="switchToPredictMultiple()">Predict With Model (Dataset)</button>
+  <button onclick="switchToPredict()">Predict With Model</button>
   
   <br>
   <br>
@@ -90,21 +89,20 @@
    <span class="tooltip">Model<span class="tooltiptext">The model you want to train. You can get an untrained model of the right format from Prepare Model.</span></span>: <input type="text" id="trainModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
    <br>
    <br>
-   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="data" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234&#13;&#10;German,6,4321</textarea>
-   <br>
+   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="trainData" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234&#13;&#10;German,6,4321</textarea>
+   <br><br>
    <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="trainResp" value='Price'>
-   <br>
    <br>
    <br>
    <span class="tooltip">Training rounds<span class="tooltiptext">The number of iterations you want the training algorithm to run for. More rounds are almost always better, but A) more rounds take longer to run, B) returns to adding more rounds diminish sharply, and C) overtraining makes it more likely that you'll overfit to the training data.</span></span>: <input type="text" id="nrounds" value='100'>
    <br><br>
    <span class="tooltip">Learning rate<span class="tooltiptext">The rate at which the model is trained. If training takes too long, try increasing this value; if you get crashes or other odd behaviour, try decreasing it. Note that the optimal value here will vary for different loss functions.</span></span>: <input type="text" id="lr" value='0.1'>
    <br><br>
-   <span class="tooltip">Loss function<span class="tooltiptext">The error distribution the model uses to decide which mis-predictions are most important to correct. Convention is to use Gamma when predicting the price of something, and Poisson when predicting how many times something will happen in a given timespan.</span></span><select id="loss">
+   <span class="tooltip">Loss function<span class="tooltiptext">The error distribution the model uses to decide which mis-predictions are most important to correct. Convention is to use Gamma when predicting the price of something, and Poisson when predicting how many times something will happen in a given timespan.</span></span>: <select id="loss">
     <option value="Gamma">Gamma</option>
     <option value="Poisson">Poisson</option>
    </select>
-   <br>
+   <br><br>
    <button onclick="train()">Train</button>
    <br>
    <div id="roundcount"></div>
@@ -114,38 +112,23 @@
    <div id="outputSpace"></div>
   </div>
   
-  <div id="PredictSinglePageDiv" style="display:none">
-   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictSingleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+  <div id="PredictPageDiv" style="display:none">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
    <br>
    <br>
-   <button onclick="create_inputSpace()">Request Inputs</button>
-   <div id="predictSingleInputSpace">
+   <button onclick="create_inputSpace(false)">Predict For Single Row</button>
+   <button onclick="create_inputSpace(true)">Predict For Single Row (With Graphs)</button>
+   <button onclick="create_dataset_inputSpace()">Predict For Dataset</button>
+   <div id="predictInputSpace">
    </div>
-  
-   <br>
-   <button onclick="predict_single()">Predict</button>
    <br>
    <br>
    <br>
-   <div id="predictSingleEffects"></div>
-   <div id="predictSingleOutput"></div>
+   <div id="predictEffects"></div>
+   <div id="predictOutput"></div>
   </div>
   
-  <div id="PredictMultiplePageDiv" style="display:none">
-   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictMultipleModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
-   <br>
-   <br>
-   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="predictMultipleData" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>
-   <br>
-   <br>
-   <br>
-   <button onclick="predict_multiple()">Predict</button>
-   <br>
-   <br>
-   <div id="predictMultipleOutputSpace">
-  </div>
-  
-  <!-- All the external libraries, should be kept here when all else finalized -->
+  <!-- All the external libraries. These are offered under difference license terms to the code that uses them. -->
   
   <script src="https://d3js.org/d3.v7.min.js"></script>
   
@@ -161,36 +144,25 @@
    document.getElementById('LandingPageDiv').style.display = "inline"
    document.getElementById('PrepPageDiv').style.display = "none"
    document.getElementById('TrainPageDiv').style.display = "none"
-   document.getElementById('PredictSinglePageDiv').style.display = "none"
-   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+   document.getElementById('PredictPageDiv').style.display = "none"
   }
   function switchToPrep(){
    document.getElementById('LandingPageDiv').style.display = "none"
    document.getElementById('PrepPageDiv').style.display = "inline"
    document.getElementById('TrainPageDiv').style.display = "none"
-   document.getElementById('PredictSinglePageDiv').style.display = "none"
-   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+   document.getElementById('PredictPageDiv').style.display = "none"
   }
   function switchToTrain(){
    document.getElementById('LandingPageDiv').style.display = "none"
    document.getElementById('PrepPageDiv').style.display = "none"
    document.getElementById('TrainPageDiv').style.display = "inline"
-   document.getElementById('PredictSinglePageDiv').style.display = "none"
-   document.getElementById('PredictMultiplePageDiv').style.display = "none"
+   document.getElementById('PredictPageDiv').style.display = "none"
   }
-  function switchToPredictSingle(){
+  function switchToPredict(){
    document.getElementById('LandingPageDiv').style.display = "none"
    document.getElementById('PrepPageDiv').style.display = "none"
    document.getElementById('TrainPageDiv').style.display = "none"
-   document.getElementById('PredictSinglePageDiv').style.display = "inline"
-   document.getElementById('PredictMultiplePageDiv').style.display = "none"
-  }
-  function switchToPredictMultiple(){
-   document.getElementById('LandingPageDiv').style.display = "none"
-   document.getElementById('PrepPageDiv').style.display = "none"
-   document.getElementById('TrainPageDiv').style.display = "none"
-   document.getElementById('PredictSinglePageDiv').style.display = "none"
-   document.getElementById('PredictMultiplePageDiv').style.display = "inline"
+   document.getElementById('PredictPageDiv').style.display = "inline"
   }
   
   //Functions for Prep
@@ -348,7 +320,7 @@
   }
 
   function create_graphSpace(){
-   model = document.getElementById("model").value
+   model = document.getElementById("trainModel").value
    model = JSON.parse(model)
    document.getElementById("graphSpace").innerHTML = ""
    prep_graphSpace(model)//.then(function(){
@@ -717,7 +689,7 @@
    nrounds = document.getElementById("nrounds").value
    lr = document.getElementById("lr").value
    
-   data = document.getElementById("data").value
+   data = document.getElementById("trainData").value
    data = d3.csvParse(data)
    
    document.getElementById("outputSpace").innerHTML = "Preparing . . ."
@@ -740,7 +712,7 @@
    function train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,resp){
     if (i==nrounds){
      document.getElementById("roundcount").innerHTML = String(nrounds)+"/"+String(nrounds)
-     document.getElementById("outputSpace").innerHTML = JSON.stringify(model)
+     document.getElementById("outputSpace").innerHTML = "Trained Model: "+JSON.stringify(model)
      console.log(model)
     }
     else{
@@ -816,15 +788,15 @@
   targetSpan=0.5
 
 
-  function prep_inputSpace(model){
+  function init_inputSpace(model){
    if ("cats" in model){
     for (col in model["cats"]){
      console.log(col)
      
-     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
-     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="plot_'+col+'"></div>'
-     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
-     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="input_'+col+'"></div>'
+     document.getElementById("predictInputSpace").innerHTML += "<br>"
+     document.getElementById("predictInputSpace").innerHTML += '<div id="predictPlot_'+col+'"></div>'
+     document.getElementById("predictInputSpace").innerHTML += "<br>"
+     document.getElementById("predictInputSpace").innerHTML += '<div id="predictInput_'+col+'"></div>'
      
     }
    }
@@ -832,135 +804,129 @@
     for (col in model["conts"]){
      console.log(col)
      
-     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
-     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="plot_'+col+'"></div>'
-     document.getElementById("predictSingleInputSpace").innerHTML += "<br>"
-     document.getElementById("predictSingleInputSpace").innerHTML += '<div id="input_'+col+'"></div>'
+     document.getElementById("predictInputSpace").innerHTML += "<br>"
+     document.getElementById("predictInputSpace").innerHTML += '<div id="predictPlot_'+col+'"></div>'
+     document.getElementById("predictInputSpace").innerHTML += "<br>"
+     document.getElementById("predictInputSpace").innerHTML += '<div id="predictInput_'+col+'"></div>'
     }
    }
   }
 
-  function create_inputSpace(){
-   model = document.getElementById("predictSingleModel").value
+  function create_inputSpace(botherWithGraphs){
+   model = document.getElementById("predictModel").value
    model = JSON.parse(model)
-   document.getElementById("predictSingleInputSpace").innerHTML = ""
-   prep_inputSpace(model)//.then(function(){
+   document.getElementById("predictInputSpace").innerHTML = ""
+   document.getElementById("predictEffects").innerHTML = ""
+   document.getElementById("predictOutput").innerHTML = ""
+   init_inputSpace(model)
     
     
     if ("cats" in model){
      for (col in model["cats"]){
       console.log(col)
       
-      var xList = []
-      var yList = []
-      
-      for (k in model["cats"][col]["uniques"]){
-       xList.push(k)
-       yList.push(model["cats"][col]["uniques"][k])
-      }
-      if (model["cats"][col].hasOwnProperty("OTHER")){
-       xList.push("OTHER")
-       yList.push(model["cats"][col]["OTHER"])
-      }
-      
-      var plotdata = [
-      {
-       x: xList,
-       y: yList,
-       type: 'bar'
-      }
-      ]
-      
-      var layout = {
-      title: 'PDP for '+col,
-      xaxis: {
-       title: col,
-      },
-      yaxis: {
-       title: 'Multiplier',
-       range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
-      },
-      
-      height: 600,
-      width: 800
-      };
-      
-      Plotly.newPlot("plot_"+col, plotdata, layout)
-      
-      //Plotly.toImage("plot_"+col, {format: 'png', width: 600, height: 400}).then(function(url){
-      // console.log("hurgus")
-      // document.getElementById("inputSpace").innerHTML += '<img src="'+url+'">'
-      // console.log("burgus")
-      //})
-      
-      //document.getElementById("plot_"+col).innerHTML = ""
-      
-      
-      document.getElementById("input_"+col).innerHTML += ""+col
-      document.getElementById("input_"+col).innerHTML += ': <input type="text" id="dat_'+col+'">'
+      if (botherWithGraphs){
+       var xList = []
+       var yList = []
+       
+       for (k in model["cats"][col]["uniques"]){
+        xList.push(k)
+        yList.push(model["cats"][col]["uniques"][k])
+       }
+       if (model["cats"][col].hasOwnProperty("OTHER")){
+        xList.push("OTHER")
+        yList.push(model["cats"][col]["OTHER"])
+       }
+       
+       var plotdata = [
+       {
+        x: xList,
+        y: yList,
+        type: 'bar'
+       }
+       ]
+       
+       var layout = {
+       title: 'PDP for '+col,
+       xaxis: {
+        title: col,
+       },
+       yaxis: {
+        title: 'Multiplier',
+        range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+       },
+       
+       height: 600,
+       width: 800
+       };
+       
+       Plotly.newPlot("predictPlot_"+col, plotdata, layout)
+       }
+      document.getElementById("predictInput_"+col).innerHTML += ""+col
+      document.getElementById("predictInput_"+col).innerHTML += ': <input type="text" id="dat_'+col+'"><span id="effectStat_'+col+'"></span>'
      }
     }
     if ("conts" in model){
      for (col in model["conts"]){
       console.log(col)
-      //document.getElementById("inputSpace").innerHTML += "<br>"
-      //document.getElementById("inputSpace").innerHTML += '<div id="plot_'+col+'" style="z-index: 9999;"></div>'
       
-      
-      var xList = []
-      var yList = []
-      
-      for (k in model["conts"][col]){
-       xList.push(model["conts"][col][k][0])
-       yList.push(model["conts"][col][k][1])
+      if (botherWithGraphs){
+       
+       var xList = []
+       var yList = []
+       
+       for (k in model["conts"][col]){
+        xList.push(model["conts"][col][k][0])
+        yList.push(model["conts"][col][k][1])
+       }
+       
+       
+       var plotdata = [
+       {
+        x: xList,
+        y: yList,
+        type: 'scatter',
+        mode: 'lines+markers'
+       }
+       ]
+       
+       var layout = {
+       title: 'PDP for '+col,
+       xaxis: {
+        title: col,
+       },
+       yaxis: {
+        title: 'Multiplier',
+        range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+       },
+       
+       height: 600,
+       width: 800
+       };
+       
+       Plotly.newPlot("predictPlot_"+col, plotdata, layout)
       }
       
-      
-      var plotdata = [
-      {
-       x: xList,
-       y: yList,
-       type: 'scatter',
-       mode: 'lines+markers'
-      }
-      ]
-      
-      var layout = {
-      title: 'PDP for '+col,
-      xaxis: {
-       title: col,
-      },
-      yaxis: {
-       title: 'Multiplier',
-       range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
-      },
-      
-      height: 600,
-      width: 800
-      };
-      
-      Plotly.newPlot("plot_"+col, plotdata, layout)
-      //Plotly.toImage("plot_"+col, {format: 'png', width: 600, height: 400}).then(function(url){
-      // document.getElementById("inputSpace").innerHTML += '<img src="'+url+'">'
-      //})
-      
-      
-      //document.getElementById("plot_"+col).innerHTML = ""
-      
-      document.getElementById("input_"+col).innerHTML += ""+col
-      document.getElementById("input_"+col).innerHTML += ': <input type="number" id="dat_'+col+'">'
+      document.getElementById("predictInput_"+col).innerHTML += ""+col
+      document.getElementById("predictInput_"+col).innerHTML += ': <input type="number" id="dat_'+col+'"><span id="effectStat_'+col+'"></span>'
      }
     }
+   if (botherWithGraphs){
+    document.getElementById("predictInputSpace").innerHTML +='<br><br><button onclick="predict_single(true)">Predict</button>'
+   }
+   else{
+    document.getElementById("predictInputSpace").innerHTML +='<br><br><button onclick="predict_single(false)">Predict</button>'
+   }
    //})
    //console.log(document.getElementById("inputSpace").innerHTML)
   }
 
-  function predict_single() {
-   model = document.getElementById("predictSingleModel").value
+  function predict_single(botherWithGraphs) {
+   model = document.getElementById("predictModel").value
    model = JSON.parse(model)
    console.log('m',model)
    ipd = {}
-   console.log(document.getElementById("predictSingleInputSpace").innerHTML)
+   console.log(document.getElementById("predictInputSpace").innerHTML)
    if ("cats" in model){
     for (col in model["cats"]){
      ipd[col] = document.getElementById("dat_"+col).value
@@ -971,10 +937,12 @@
      ipd[col] = parseFloat(document.getElementById("dat_"+col).value)
     }
    }
-   console.log(ipd)
-   p = predict_mult_flashily(model, ipd)
    
-   document.getElementById("predictSingleOutput").innerHTML = Math.round(p*100)/100
+   p = predict_mult_flashily(model, ipd, botherWithGraphs)
+   console.log(ipd)
+   
+   
+   document.getElementById("predictOutput").innerHTML = Math.round(p*100)/100
    console.log('p',p)
   }
 
@@ -997,75 +965,78 @@
    return pred
   }
 
-  function predict_mult_flashily(model, inputDict) {
+  function predict_mult_flashily(model, inputDict, botherWithGraphs) {
    pred = model["BASE_VALUE"]
    
-   document.getElementById("predictSingleEffects").innerHTML = ""+model["BASE_VALUE"]+ " * "
+   document.getElementById("predictEffects").innerHTML = ""+model["BASE_VALUE"]+ " * "
    
    if ("cats" in model){
     for (col in model["cats"]){
      
      effectOfCol = get_effect_of_cat_on_single_input(inputDict[col], model['cats'][col])
      
-     document.getElementById("predictSingleEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
+     document.getElementById("predictInput_"+col).innerHTML += (" Multiplier from this feature is "+Math.round(effectOfCol*10000)/10000)
+     document.getElementById("predictEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
      
-     
-     var xList = []
-     var yList = []
-     
-     if (inputDict[col] in model['cats'][col]["uniques"]){
-      xOfCol = inputDict[col]
-     }
-     else{
-      xOfCol = "OTHER"
-     }
-     
-     
-     for (k in model["cats"][col]["uniques"]){
-      xList.push(k)
-      yList.push(model["cats"][col]["uniques"][k])
-     }
-     if (model["cats"][col].hasOwnProperty("OTHER")){
-      xList.push("OTHER")
-      yList.push(model["cats"][col]["OTHER"])
-     }
-     
-     var plotdata = [
-     {
-      x: xList,
-      y: yList,
-      type: 'bar',
-      name: 'Multipliers'
-     },
-     {
-      x:[xOfCol],
-      y:[effectOfCol],
-      type: 'scatter',
-      mode: 'markers',
-      name: 'Effect on prediction',
-      marker: {
-        color: 'red',
-        symbol: 'square',
-        size: 10
+     if (botherWithGraphs){
+      
+      var xList = []
+      var yList = []
+      
+      if (inputDict[col] in model['cats'][col]["uniques"]){
+       xOfCol = inputDict[col]
       }
+      else{
+       xOfCol = "OTHER"
+      }
+      
+      
+      for (k in model["cats"][col]["uniques"]){
+       xList.push(k)
+       yList.push(model["cats"][col]["uniques"][k])
+      }
+      if (model["cats"][col].hasOwnProperty("OTHER")){
+       xList.push("OTHER")
+       yList.push(model["cats"][col]["OTHER"])
+      }
+      
+      var plotdata = [
+      {
+       x: xList,
+       y: yList,
+       type: 'bar',
+       name: 'Multipliers'
+      },
+      {
+       x:[xOfCol],
+       y:[effectOfCol],
+       type: 'scatter',
+       mode: 'markers',
+       name: 'Effect on prediction',
+       marker: {
+         color: 'red',
+         symbol: 'square',
+         size: 10
+       }
+      }
+      ]
+      
+      var layout = {
+      title: 'PDP for '+col,
+      xaxis: {
+       title: col,
+      },
+      yaxis: {
+       title: 'Multiplier',
+       range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+      },
+      
+      height: 600,
+      width: 800
+      };
+      
+      Plotly.react("predictPlot_"+col, plotdata, layout)
      }
-     ]
-     
-     var layout = {
-     title: 'PDP for '+col,
-     xaxis: {
-      title: col,
-     },
-     yaxis: {
-      title: 'Multiplier',
-      range: [Math.min(Math.min(...yList)-leeway, 0, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
-     },
-     
-     height: 600,
-     width: 800
-     };
-     
-     Plotly.react("plot_"+col, plotdata, layout)
      
      console.log(effectOfCol)
      pred = pred*effectOfCol
@@ -1076,65 +1047,77 @@
      
      effectOfCol = get_effect_of_cont_on_single_input(inputDict[col], model['conts'][col])
      
-     document.getElementById("predictSingleEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
+     document.getElementById("effectStat_"+col).innerHTML = (" Multiplier from this feature is "+Math.round(effectOfCol*10000)/10000)
+     document.getElementById("predictEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
      
-     console.log(effectOfCol)
-     
-     var xList = []
-     var yList = []
-     
-     for (k in model["conts"][col]){
-      xList.push(model["conts"][col][k][0])
-      yList.push(model["conts"][col][k][1])
-     }
-     
-     var plotdata = [
-     {
-      x: xList,
-      y: yList,
-      type: 'scatter',
-      mode: 'lines+markers',
-      name: 'Multipliers'
-     },
-     {
-      x:[inputDict[col]],
-      y:[effectOfCol],
-      type: 'scatter',
-      mode: 'markers',
-      name: 'Effect on prediction',
-      marker: {
-        color: 'red',
-        symbol: 'square',
-        size: 10
-      }
-     }
-     ]
-     
-     var layout = {
-      title: 'PDP for '+col,
-      xaxis: {
-       title: col,
-      },
-      yaxis: {
-       title: 'Multiplier',
-       range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
-      },
+     if (botherWithGraphs){
       
-      height: 600,
-      width: 800
-      };
-     
-     Plotly.react("plot_"+col, plotdata, layout)
-     
+      var xList = []
+      var yList = []
+      
+      for (k in model["conts"][col]){
+       xList.push(model["conts"][col][k][0])
+       yList.push(model["conts"][col][k][1])
+      }
+      
+      var plotdata = [
+      {
+       x: xList,
+       y: yList,
+       type: 'scatter',
+       mode: 'lines+markers',
+       name: 'Multipliers'
+      },
+      {
+       x:[inputDict[col]],
+       y:[effectOfCol],
+       type: 'scatter',
+       mode: 'markers',
+       name: 'Effect on prediction',
+       marker: {
+         color: 'red',
+         symbol: 'square',
+         size: 10
+       }
+      }
+      ]
+      
+      var layout = {
+       title: 'PDP for '+col,
+       xaxis: {
+        title: col,
+       },
+       yaxis: {
+        title: 'Multiplier',
+        range: [Math.min(Math.min(...yList)-leeway, defaultValue-targetSpan), Math.max(Math.max(...yList)+leeway, defaultValue+targetSpan)]
+       },
+       
+       height: 600,
+       width: 800
+       };
+      
+      Plotly.react("predictPlot_"+col, plotdata, layout)
+     }
      pred = pred*effectOfCol
     }
    }
    
-   document.getElementById("predictSingleEffects").innerHTML = document.getElementById("predictSingleEffects").innerHTML.slice(0,-3) + " = "
+   document.getElementById("predictEffects").innerHTML = document.getElementById("predictEffects").innerHTML.slice(0,-3) + " = "
    
    return pred
   }
-
+  
+  
+  function create_dataset_inputSpace(){
+   document.getElementById("predictInputSpace").innerHTML = ""
+   document.getElementById("predictEffects").innerHTML = ""
+   document.getElementById("predictOutput").innerHTML = ""
+   
+   document.getElementById("predictInputSpace").innerHTML = '<br><br><span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here (must be in csv format).</span></span>: <textarea id="predictData" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>'
+   
+   document.getElementById("predictInputSpace").innerHTML +='<br><br><button onclick="predict_multiple()">Predict</button>'
+  }
+  
   function get_effect_of_cat_on_single_input(input,cat){
    if (input in cat["uniques"]){
     return cat["uniques"][input]
@@ -1154,13 +1137,11 @@
     return cont[cont.length-1][1] //everything outside our scope is flat
    }
   }
-    
-  //Functions for Predict (Multiple)
   
   function predict_multiple() {
-   model = document.getElementById("predictMultipleModel").value
+   model = document.getElementById("predictModel").value
    model = JSON.parse(model)
-   data = document.getElementById("predictMultipleData").value
+   data = document.getElementById("predictData").value
    console.log(data)
    data = d3.csvParse(data)
    
@@ -1172,7 +1153,7 @@
    
    output = d3.csvFormat(output)
    
-   d3.select("#predictMultipleOutputSpace")
+   d3.select("#predictOutput")
           .append("pre")
           .text(output);
   }
