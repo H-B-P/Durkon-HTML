@@ -44,12 +44,12 @@
   </style>
   
 </head>
-<body>
+<body>  
   
-  <button onclick="switchToLanding()">Landing Page</button>
-  <button onclick="switchToPrep()">Prepare Model</button>
-  <button onclick="switchToTrain()">Train Model</button>
-  <button onclick="switchToPredict()">Predict With Model</button>
+  <button onclick="switchToLanding()" id="landingButton">Landing Page</button>
+  <button onclick="switchToPrep()" id="prepButton">Prepare Model</button>
+  <button onclick="switchToTrain()" id="trainButton">Train Model</button>
+  <button onclick="switchToPredict()" id="predictButton">Predict With Model</button>
   
   <br>
   <br>
@@ -58,9 +58,9 @@
    
    This is the web implementation for Durkon, a library for automatically building transparent predictive models.
    <br><br>
-   You can use Prepare Model to create a starting model, use Train Model to fit it to a dataset, and use Predict With Model to apply it to new data.
+   You can use Prepare Model to create a starting model, use Train Model to fit it to a dataset, and use Predict With Model to apply it to new data (you will need to copypaste the model between subpages). Check the <span class="tooltip">hovertext<span class="tooltiptext">Like this!</span></span> if you need more information.
    <br><br>
-   This is all done client-side, in-browser: information provided stays on your computer the entire time. (This also means you can model while disconnected from the internet.)
+   This is all done client-side, in-browser: information provided stays on your computer the entire time. This also means you can model while disconnected from the internet.
    <br>
    <br>
    <br>
@@ -69,13 +69,13 @@
   
   <div id="PrepPageDiv" style="display:none">
    <br>
-    <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="prepData" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234</textarea>
+    <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="prepData" rows= 20 style="height: auto;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
    <br>
    <br>
    <br>
-   <span class="tooltip">Categorical features<span class="tooltiptext">Predictive features which are expressed as categories: things like "Species", "Genre", or "Manufacturer_of_Car". List them with a comma between each feature name, and no spaces.</span></span>: <input type="text" id="prepCats" value='Mackerel'>
+   <span class="tooltip">Categorical features<span class="tooltiptext">Predictive features which are expressed as categories: things like "Species", "Genre", or "Manufacturer_of_Car". List them with a comma between each feature name, and no spaces.</span></span>: <input type="text" id="prepCats" value='Flavour,Wedding,Fancy'>
    <br><br>
-   <span class="tooltip">Continuous features<span class="tooltiptext">Predictive features which are expressed as quantities: things like "Height", "Page_Count", or "Age_of_Driver". List them with a comma between each feature name, and no spaces.</span></span>: <input type="text" id="prepConts" value='Quality'>
+   <span class="tooltip">Continuous features<span class="tooltiptext">Predictive features which are expressed as quantities: things like "Height", "Page_Count", or "Age_of_Driver". List them with a comma between each feature name, and no spaces.</span></span>: <input type="text" id="prepConts" value='Width,Height,Icing Thickness'>
    <br><br>
    <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="prepResp" value='Price'>
    <br><br>
@@ -86,10 +86,11 @@
   </div>
   
   <div id="TrainPageDiv" style="display:none">
-   <span class="tooltip">Model<span class="tooltiptext">The model you want to train. You can get an untrained model of the right format from Prepare Model.</span></span>: <input type="text" id="trainModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to train. You can get an untrained model of the right format from Prepare Model.</span></span>: <input type="text" id="trainModel" value="{&quot;BASE_VALUE&quot;:33.75857142857143,&quot;cats&quot;:{&quot;Flavour&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;vanilla&quot;:1,&quot;lemon&quot;:1,&quot;marzipan&quot;:1,&quot;chocolate&quot;:1}},&quot;Wedding&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;No&quot;:1,&quot;Yes&quot;:1}},&quot;Fancy&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;Somewhat&quot;:1,&quot;Very&quot;:1}}},&quot;conts&quot;:{&quot;Width&quot;:[[6,1],[7,1],[8,1],[13,1]],&quot;Height&quot;:[[6,1],[8,1],[10,1]],&quot;Icing Thickness&quot;:[[4,1],[5,1],[6,1],[9,1],[10,1]]}}">
+   
    <br>
    <br>
-   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="trainData" rows= 20 style="height: auto;">Mackerel,Quality,Price&#13;&#10;French,5,1234&#13;&#10;German,6,4321</textarea>
+   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="trainData" rows= 20 style="height: auto;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
    <br><br>
    <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="trainResp" value='Price'>
    <br>
@@ -98,10 +99,13 @@
    <br><br>
    <span class="tooltip">Learning rate<span class="tooltiptext">The rate at which the model is trained. If training takes too long, try increasing this value; if you get crashes or other odd behaviour, try decreasing it. Note that the optimal value here will vary for different loss functions.</span></span>: <input type="text" id="lr" value='0.1'>
    <br><br>
-   <span class="tooltip">Loss function<span class="tooltiptext">The error distribution the model uses to decide which mis-predictions are most important to correct. Convention is to use Gamma when predicting the price of something, and Poisson when predicting how many times something will happen in a given timespan.</span></span>: <select id="loss">
+   <span class="tooltip">Loss function<span class="tooltiptext">The error distribution the model uses to decide which mis-predictions are most important to correct. Convention is to use Gamma when predicting the price of something, Poisson when predicting how many times something will happen in a given timespan, and Tweedie for situations which are a fusion of Gamma and Poisson (such as predicting Burning Cost in an Insurance context).</span></span>: <select id="loss">
     <option value="Gamma">Gamma</option>
     <option value="Poisson">Poisson</option>
+    <option value="Tweedie">Tweedie</option>
    </select>
+   <br><br>
+   <span class="tooltip">Tweedie Exponent<span class="tooltiptext">The 'p' parameter for the Tweedie loss function; only used when Tweedie is selected. Takes a value between 1 and 2: 1 is Poisson, 2 is Gamma, and somewhere inbetween is somewhere inbetween.</span></span>: <input type="text" id="pTweedie" value='1.5'>
    <br><br>
    <button onclick="train()">Train</button>
    <br>
@@ -113,7 +117,7 @@
   </div>
   
   <div id="PredictPageDiv" style="display:none">
-   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictModel" value="{&quot;BASE_VALUE&quot;:1000, &quot;cats&quot;:{&quot;Mackerel&quot;:{&quot;uniques&quot;:{&quot;Swedish&quot;:2.3,&quot;French&quot;:0.4},&quot;OTHER&quot;:1}}, &quot;conts&quot;:{&quot;Quality&quot;:[[0,0.2],[1,0.5],[10,1.4]]}}">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictModel" value="{&quot;BASE_VALUE&quot;:33.75857142857143,&quot;cats&quot;:{&quot;Flavour&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;vanilla&quot;:1,&quot;lemon&quot;:1,&quot;marzipan&quot;:1,&quot;chocolate&quot;:1}},&quot;Wedding&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;No&quot;:1,&quot;Yes&quot;:1}},&quot;Fancy&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;Somewhat&quot;:1,&quot;Very&quot;:1}}},&quot;conts&quot;:{&quot;Width&quot;:[[6,1],[7,1],[8,1],[13,1]],&quot;Height&quot;:[[6,1],[8,1],[10,1]],&quot;Icing Thickness&quot;:[[4,1],[5,1],[6,1],[9,1],[10,1]]}}">
    <br>
    <br>
    <button onclick="create_inputSpace(false)">Predict For Single Row</button>
@@ -140,25 +144,72 @@
   
   //Switch between modes.
   
+  defaultButtonText = document.getElementById('landingButton').style.color
+  defaultButtonBackground = document.getElementById('landingButton').style.backgroundColor
+  
+  document.getElementById('landingButton').style.color = "white"
+  document.getElementById('landingButton').style.backgroundColor = "black"
+  
   function switchToLanding(){
+   
+   document.getElementById('landingButton').style.color = "white"
+   document.getElementById('landingButton').style.backgroundColor = "black"
+   document.getElementById('prepButton').style.color = defaultButtonText
+   document.getElementById('prepButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('trainButton').style.color = defaultButtonText
+   document.getElementById('trainButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('predictButton').style.color = defaultButtonText
+   document.getElementById('predictButton').style.backgroundColor = defaultButtonBackground
+   
+   
    document.getElementById('LandingPageDiv').style.display = "inline"
    document.getElementById('PrepPageDiv').style.display = "none"
    document.getElementById('TrainPageDiv').style.display = "none"
    document.getElementById('PredictPageDiv').style.display = "none"
   }
   function switchToPrep(){
+   
+   document.getElementById('landingButton').style.color = defaultButtonText
+   document.getElementById('landingButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('prepButton').style.color = "white"
+   document.getElementById('prepButton').style.backgroundColor = "black"
+   document.getElementById('trainButton').style.color = defaultButtonText
+   document.getElementById('trainButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('predictButton').style.color = defaultButtonText
+   document.getElementById('predictButton').style.backgroundColor = defaultButtonBackground
+   
    document.getElementById('LandingPageDiv').style.display = "none"
    document.getElementById('PrepPageDiv').style.display = "inline"
    document.getElementById('TrainPageDiv').style.display = "none"
    document.getElementById('PredictPageDiv').style.display = "none"
   }
   function switchToTrain(){
+   
+   document.getElementById('landingButton').style.color = defaultButtonText
+   document.getElementById('landingButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('prepButton').style.color = defaultButtonText
+   document.getElementById('prepButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('trainButton').style.color = "white"
+   document.getElementById('trainButton').style.backgroundColor = "black"
+   document.getElementById('predictButton').style.color = defaultButtonText
+   document.getElementById('predictButton').style.backgroundColor = defaultButtonBackground
+   
    document.getElementById('LandingPageDiv').style.display = "none"
    document.getElementById('PrepPageDiv').style.display = "none"
    document.getElementById('TrainPageDiv').style.display = "inline"
    document.getElementById('PredictPageDiv').style.display = "none"
   }
   function switchToPredict(){
+   
+   document.getElementById('landingButton').style.color = defaultButtonText
+   document.getElementById('landingButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('prepButton').style.color = defaultButtonText
+   document.getElementById('prepButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('trainButton').style.color = defaultButtonText
+   document.getElementById('trainButton').style.backgroundColor = defaultButtonBackground
+   document.getElementById('predictButton').style.color = "white"
+   document.getElementById('predictButton').style.backgroundColor = "black"
+   
    document.getElementById('LandingPageDiv').style.display = "none"
    document.getElementById('PrepPageDiv').style.display = "none"
    document.getElementById('TrainPageDiv').style.display = "none"
@@ -200,7 +251,7 @@
    
    output = JSON.stringify(model)
    
-   document.getElementById("prepOutputSpace").innerHTML = output
+   document.getElementById("prepOutputSpace").innerHTML = "Prepared Model: " + output
   }
 
   function get_cat_feat(df, cat, catMinPrev=0.01, defaultValue=1, weightCol=null) {
@@ -666,7 +717,12 @@
   }
 
   function Gamma_grad(pred,act){
-   return math.dotDivide(math.subtract(pred,act),math.dotMultiply(pred,pred))
+   return math.dotDivide(math.subtract(pred,act),math.dotPow(pred,2))
+  }
+  
+  function Tweedie_grad(pred,act){
+   pT = document.getElementById("pTweedie").value
+   return math.dotDivide(math.subtract(pred,act),math.dotPow(pred,pT))
   }
 
   function lossgrad(pred,act){
@@ -678,6 +734,9 @@
    }
    if (lf==="Poisson"){
    return Poisson_grad(pred,act)
+   }
+   if (lf==="Tweedie"){
+   return Tweedie_grad(pred,act)
    }
   }
 
@@ -717,58 +776,58 @@
     }
     else{
      document.getElementById("roundcount").innerHTML = String(i)+"/"+String(nrounds)
-    document.getElementById("outputSpace").innerHTML = JSON.stringify(model)
-    console.log(model)
-    
-    contEffects = get_effects_of_cont_cols_from_relevance_dict(cord,model)
-    catEffects = get_effects_of_cat_cols_from_relevance_dict(card,model)
-    
-    pred = comb_from_effects_mult(model["BASE_VALUE"], contEffects.length, contEffects, catEffects)
-    
-    lossgradient = lossgrad(pred, resp)
-    
-    if ("conts" in model){
-     for (col in model["conts"]){
-      effectOfCol = contEffects[col]
-      ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
-      
-      finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),cord[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
-      
-      for (k in model['conts'][col]){
-       totRele = tord["conts"][col][k]
-       if (totRele>0){
-        model["conts"][col][k][1] -= finalGradients[k]*lr/totRele
+     document.getElementById("outputSpace").innerHTML = "(Partially) Trained Model: "+JSON.stringify(model)
+     console.log(model)
+     
+     contEffects = get_effects_of_cont_cols_from_relevance_dict(cord,model)
+     catEffects = get_effects_of_cat_cols_from_relevance_dict(card,model)
+     
+     pred = comb_from_effects_mult(model["BASE_VALUE"], contEffects.length, contEffects, catEffects)
+     
+     lossgradient = lossgrad(pred, resp)
+     
+     if ("conts" in model){
+      for (col in model["conts"]){
+       effectOfCol = contEffects[col]
+       ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
+       
+       finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),cord[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
+       
+       for (k in model['conts'][col]){
+        totRele = tord["conts"][col][k]
+        if (totRele>0){
+         model["conts"][col][k][1] -= finalGradients[k]*lr/totRele
+        }
        }
       }
      }
-    }
-    
-    if ("cats" in model){
-     for (col in model["cats"]){
-      
-      effectOfCol = catEffects[col]
-      ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
-      finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),card[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
-      
-      skeys = getSortedKeys(model['cats'][col]["uniques"])
-      
-      for (k in skeys){
-       totRele = tord["cats"][col][k]
+     
+     if ("cats" in model){
+      for (col in model["cats"]){
        
+       effectOfCol = catEffects[col]
+       ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
+       finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),card[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
        
+       skeys = getSortedKeys(model['cats'][col]["uniques"])
        
+       for (k in skeys){
+        totRele = tord["cats"][col][k]
+        
+        
+        
+        if (totRele>0){
+         model["cats"][col]["uniques"][skeys[k]] -= finalGradients[k]*lr/totRele
+        }
+       }
+       
+       totRele = tord["cats"][col][tord["cats"][col].length-1]
        if (totRele>0){
-        model["cats"][col]["uniques"][skeys[k]] -= finalGradients[k]*lr/totRele
+        model["cats"][col]["OTHER"] -= finalGradients[finalGradients.length-1]*lr/totRele
        }
       }
-      
-      totRele = tord["cats"][col][tord["cats"][col].length-1]
-      if (totRele>0){
-       model["cats"][col]["OTHER"] -= finalGradients[finalGradients.length-1]*lr/totRele
-      }
      }
-    }
-    update_graphs(model)
+     update_graphs(model)
      
      i++
      setTimeout(train_one_step, 0, inputDf, target,nrounds,lr,model, i,cord,card,tord,resp)
@@ -942,7 +1001,7 @@
    console.log(ipd)
    
    
-   document.getElementById("predictOutput").innerHTML = Math.round(p*100)/100
+   document.getElementById("predictOutput").innerHTML = "Prediction: " + Math.round(p*100)/100
    console.log('p',p)
   }
 
@@ -1113,8 +1172,9 @@
    document.getElementById("predictEffects").innerHTML = ""
    document.getElementById("predictOutput").innerHTML = ""
    
-   document.getElementById("predictInputSpace").innerHTML = '<br><br><span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here (must be in csv format).</span></span>: <textarea id="predictData" rows= 20 style="height: auto;">Mackerel,Quality&#13;&#10;French,5</textarea>'
+   document.getElementById("predictInputSpace").innerHTML = '<br><br><span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here (must be in csv format).</span></span>: <textarea id="predictData" rows= 20 style="height: auto;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;4,11,7,strawberry,Yes,Somewhat,5.09</textarea>'
    
+
    document.getElementById("predictInputSpace").innerHTML +='<br><br><button onclick="predict_multiple()">Predict</button>'
   }
   
@@ -1144,6 +1204,8 @@
    data = document.getElementById("predictData").value
    console.log(data)
    data = d3.csvParse(data)
+   
+   document.getElementById("predictOutput").innerHTML = "Dataset with prediction column: <br><br>"
    
    output = data.map(function(d) {
     d["PREDICTED"] = Math.round(predict_mult(model, d)*1000000)/1000000
