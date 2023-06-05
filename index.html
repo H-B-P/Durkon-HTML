@@ -17,7 +17,7 @@
   /* Tooltip text */
   .tooltip .tooltiptext {
     visibility: hidden;
-    width: 480px;
+    width: 400px;
     background-color: #555;
     color: #fff;
     text-align: center;
@@ -58,9 +58,11 @@
    
    This is the web implementation for Durkon, a library for automatically building transparent predictive models.
    <br><br>
-   You can use Prepare Model to create a starting model, use Train Model to fit it to a dataset, and use Predict With Model to apply it to new data (you will need to copypaste the model between subpages). Check the <span class="tooltip">hovertext<span class="tooltiptext">Like this!</span></span> if you need more information.
+   You can use Prepare Model to create a starting model, use Train Model to fit it to a dataset, and use Predict With Model to apply it to new data (you will need to copypaste the model between subpages).
    <br><br>
-   This is all done client-side, in-browser: information provided stays on your computer the entire time. This also means you can model while disconnected from the internet.
+   Check the <span class="tooltip">hovertext<span class="tooltiptext">Like this!</span></span> if you need more information.
+   <br><br>
+   Processing is all done client-side, in-browser: information provided stays on your computer the entire time. This also means you can model while disconnected from the internet.
    <br>
    <br>
    <br>
@@ -69,7 +71,7 @@
   
   <div id="PrepPageDiv" style="display:none">
    <br>
-    <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="prepData" rows= 20 style="height: auto;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
+    <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="prepData" rows= 20 style="height: auto; width:400px;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
    <br>
    <br>
    <br>
@@ -90,7 +92,7 @@
    
    <br>
    <br>
-   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="trainData" rows= 20 style="height: auto;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
+   <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="trainData" rows= 20 style="height: auto; width:400px">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
    <br><br>
    <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="trainResp" value='Price'>
    <br>
@@ -110,19 +112,19 @@
    <button onclick="train()">Train</button>
    <br>
    <div id="roundcount"></div>
-   <br>
+   
    <div id="graphSpace"></div>
    <br>
    <div id="outputSpace"></div>
   </div>
   
   <div id="PredictPageDiv" style="display:none">
-   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictModel" value="{&quot;BASE_VALUE&quot;:33.75857142857143,&quot;cats&quot;:{&quot;Flavour&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;vanilla&quot;:1,&quot;lemon&quot;:1,&quot;marzipan&quot;:1,&quot;chocolate&quot;:1}},&quot;Wedding&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;No&quot;:1,&quot;Yes&quot;:1}},&quot;Fancy&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;Somewhat&quot;:1,&quot;Very&quot;:1}}},&quot;conts&quot;:{&quot;Width&quot;:[[6,1],[7,1],[8,1],[13,1]],&quot;Height&quot;:[[6,1],[8,1],[10,1]],&quot;Icing Thickness&quot;:[[4,1],[5,1],[6,1],[9,1],[10,1]]}}">
+   <span class="tooltip">Model<span class="tooltiptext">The model you want to predict with. You can get an untrained model of the right format from Prepare Model, and train it using Train Model.</span></span>: <input type="text" id="predictModel" value= "{&quot;BASE_VALUE&quot;:33.75857142857143,&quot;cats&quot;:{&quot;Flavour&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;vanilla&quot;:1.3822864527513765,&quot;lemon&quot;:0.8196884133639327,&quot;marzipan&quot;:0.6207799367604421,&quot;chocolate&quot;:0.8396236483413716}},&quot;Wedding&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;No&quot;:0.984118967515344,&quot;Yes&quot;:1.031314822230211}},&quot;Fancy&quot;:{&quot;OTHER&quot;:1,&quot;uniques&quot;:{&quot;Somewhat&quot;:1.0434547682616129,&quot;Very&quot;:0.5947232406211355}}},&quot;conts&quot;:{&quot;Width&quot;:[[6,0.6207799367604421],[7,1.030806223388996],[8,0.7685872513742654],[13,1.3224683001953135]],&quot;Height&quot;:[[6,1.0572192194324284],[8,0.7226830507772818],[10,1.031314822230211]],&quot;Icing Thickness&quot;:[[4,0.6207799367604421],[5,1.031314822230211],[6,1.222139291509626],[9,0.5766959868662065],[10,1.030806223388996]]}}">
    <br>
    <br>
-   <button onclick="create_inputSpace(false)">Predict For Single Row</button>
-   <button onclick="create_inputSpace(true)">Predict For Single Row (With Graphs)</button>
-   <button onclick="create_dataset_inputSpace()">Predict For Dataset</button>
+   <button onclick="create_inputSpace(false)" id="pSingle">Predict For Single Row</button>
+   <button onclick="create_inputSpace(true)" id="pGraphs">Predict For Single Row (With Graphs)</button>
+   <button onclick="create_dataset_inputSpace()" id="pDataset">Predict For Dataset</button>
    <div id="predictInputSpace">
    </div>
    <br>
@@ -351,10 +353,10 @@
     for (col in model["cats"]){
      console.log(col)
      
-     document.getElementById("graphSpace").innerHTML += "<br>"
      document.getElementById("graphSpace").innerHTML += '<div id="plot_'+col+'"></div>'
      document.getElementById("graphSpace").innerHTML += "<br>"
      document.getElementById("graphSpace").innerHTML += '<div id="input_'+col+'"></div>'
+     document.getElementById("graphSpace").innerHTML += "<br>"
      
     }
    }
@@ -872,6 +874,24 @@
   }
 
   function create_inputSpace(botherWithGraphs){
+   
+   if (botherWithGraphs){
+    document.getElementById('pSingle').style.color = defaultButtonText
+    document.getElementById('pSingle').style.backgroundColor = defaultButtonBackground
+    document.getElementById('pGraphs').style.color = "white"
+    document.getElementById('pGraphs').style.backgroundColor = "black"
+    document.getElementById('pDataset').style.color = defaultButtonText
+    document.getElementById('pDataset').style.backgroundColor = defaultButtonBackground
+   }
+   else{
+    document.getElementById('pSingle').style.color = "white"
+    document.getElementById('pSingle').style.backgroundColor = "black"
+    document.getElementById('pGraphs').style.color = defaultButtonText
+    document.getElementById('pGraphs').style.backgroundColor = defaultButtonBackground
+    document.getElementById('pDataset').style.color = defaultButtonText
+    document.getElementById('pDataset').style.backgroundColor = defaultButtonBackground
+   }
+   
    model = document.getElementById("predictModel").value
    model = JSON.parse(model)
    document.getElementById("predictInputSpace").innerHTML = ""
@@ -1001,7 +1021,7 @@
    console.log(ipd)
    
    
-   document.getElementById("predictOutput").innerHTML = "Prediction: " + Math.round(p*100)/100
+   document.getElementById("predictOutput").innerHTML = "Predicted value of response variable: " + Math.round(p*100)/100
    console.log('p',p)
   }
 
@@ -1034,7 +1054,7 @@
      
      effectOfCol = get_effect_of_cat_on_single_input(inputDict[col], model['cats'][col])
      
-     document.getElementById("predictInput_"+col).innerHTML += (" Multiplier from this feature is "+Math.round(effectOfCol*10000)/10000)
+     document.getElementById("effectStat_"+col).innerHTML = (" Multiplier from this feature is "+Math.round(effectOfCol*10000)/10000)
      document.getElementById("predictEffects").innerHTML += (""+(Math.round(effectOfCol*10000)/10000)+" * ")
      
      if (botherWithGraphs){
@@ -1168,11 +1188,19 @@
   
   
   function create_dataset_inputSpace(){
+   
+   document.getElementById('pSingle').style.color = defaultButtonText
+   document.getElementById('pSingle').style.backgroundColor = defaultButtonBackground
+   document.getElementById('pGraphs').style.color = defaultButtonText
+   document.getElementById('pGraphs').style.backgroundColor = defaultButtonBackground
+   document.getElementById('pDataset').style.color = "white"
+   document.getElementById('pDataset').style.backgroundColor = "black"
+   
    document.getElementById("predictInputSpace").innerHTML = ""
    document.getElementById("predictEffects").innerHTML = ""
    document.getElementById("predictOutput").innerHTML = ""
    
-   document.getElementById("predictInputSpace").innerHTML = '<br><br><span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here (must be in csv format).</span></span>: <textarea id="predictData" rows= 20 style="height: auto;">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;4,11,7,strawberry,Yes,Somewhat,5.09</textarea>'
+   document.getElementById("predictInputSpace").innerHTML = '<br><br><span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here (must be in csv format).</span></span>: <textarea id="predictData" rows= 20 style="height: auto; width: 400px">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;6,10,10,chocolate,Yes,No,5.59&#13;&#10;12,8,7,vanilla,No,No,51.8&#13;&#10;6,8,10,vanilla,No,No,6.55&#13;&#10;7,4,8,vanilla,No,Somewhat,10.13</textarea>'
    
 
    document.getElementById("predictInputSpace").innerHTML +='<br><br><button onclick="predict_multiple()">Predict</button>'
