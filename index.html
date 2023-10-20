@@ -81,6 +81,8 @@
    <br><br>
    <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="prepResp" value='Price'>
    <br><br>
+   <span class="tooltip">Weight column<span class="tooltiptext"> The importance assigned to each row; leave this blank to treat all rows equally. (In an Insurance context, this is usually where you'd put Exposure when modelling Frequency or Burning Cost.)</span></span>: <input type="text" id="prepWei" value=''>
+   <br><br>
    <button onclick="prep()">Prep</button>
    <br><br>
    <div id="prepOutputSpace">
@@ -93,10 +95,11 @@
    <br>
    <br>
    <span class="tooltip">Data<span class="tooltiptext">Copypaste your dataset here. Make sure it's in csv format!</span></span>: <textarea id="trainData" rows= 20 style="height: auto; width:400px">Width,Height,Icing Thickness,Flavour,Wedding,Fancy,Price&#13;&#10;13,7,6,vanilla,No,Somewhat,63.5&#13;&#10;8,6,9,lemon,No,Somewhat,13.26&#13;&#10;13,6,6,vanilla,No,Somewhat,88.26&#13;&#10;6,6,4,marzipan,No,Somewhat,8.76&#13;&#10;8,10,5,chocolate,Yes,Somewhat,24.95&#13;&#10;7,8,10,lemon,No,Somewhat,22.06&#13;&#10;9,6,7,chocolate,No,Very,15.52</textarea>
-   <br><br>
+   <br><br><br>
    <span class="tooltip">Response variable<span class="tooltiptext">The quantity you're trying to predict. (In an Insurance context, this is usually something like "Price" or "Cost".)</span></span>: <input type="text" id="trainResp" value='Price'>
-   <br>
-   <br>
+   <br><br>
+   <span class="tooltip">Weight column<span class="tooltiptext"> The importance assigned to each row; leave this blank to treat all rows equally. (In an Insurance context, this is usually where you'd put Exposure when modelling Frequency or Burning Cost.)</span></span>: <input type="text" id="trainWei" value=''>
+   <br><br><br>
    <span class="tooltip">Training rounds<span class="tooltiptext">The number of iterations you want the training algorithm to run for. More rounds are almost always better, but A) more rounds take longer to run, B) returns to adding more rounds diminish sharply, and C) overtraining makes it more likely that you'll overfit to the training data.</span></span>: <input type="text" id="nrounds" value='100'>
    <br><br>
    <span class="tooltip">Learning rate<span class="tooltiptext">The rate at which the model is trained. If training takes too long, try increasing this value; if you get crashes or other odd behaviour, try decreasing it. Note that the optimal value here will vary for different loss functions.</span></span>: <input type="text" id="lr" value='0.1'>
@@ -134,7 +137,7 @@
    <div id="predictOutput"></div>
   </div>
   
-  <!-- All the external libraries. These are offered under difference license terms to the code that uses them. -->
+  <!-- All the external libraries. These are offered under different license terms to the code that uses them. -->
   
   <script src="https://d3js.org/d3.v7.min.js"></script>
   
@@ -226,26 +229,48 @@
    conts = document.getElementById("prepConts").value.split(",")
    
    resp = document.getElementById("prepResp").value
+   wei = document.getElementById("prepWei").value
    
    data = document.getElementById("prepData").value
    data = d3.csvParse(data)
    
-   var resps = data.map(function(d) { return +d[resp]; });
-   var meanResp = d3.mean(resps);
+   console.log("WEI WEI WEI")
+   console.log(wei)
+   
+   if (wei!=""){
+    
+    var sumOfProducts = d3.sum(data, function(d) {
+     return +d[resp] * +d[wei];
+    });
+ 
+    var sumOfWei = d3.sum(data, function(d) {
+     return +d[wei];
+    });
+    
+    meanResp = sumOfProducts/sumOfWei
+   
+   }else{
+    
+    var resps = data.map(function(d) { return +d[resp]; });
+    var meanResp = d3.mean(resps);
+   
+   }
+   
+   console.log(wei)
    
    model = {"BASE_VALUE": meanResp, "cats":{}, "conts":{}}
    
    for (cat in cats){
     cat = cats[cat]
     if (cat!=""){
-     model["cats"][cat] = get_cat_feat(data, cat)
+     model["cats"][cat] = get_cat_feat(data, cat, undefined, undefined, wei)
     }
    }
    
    for (cont in conts){
     cont = conts[cont]
     if (cont!=""){
-     model["conts"][cont] = get_cont_feat(data, cont)
+     model["conts"][cont] = get_cont_feat(data, cont, undefined, undefined, undefined, weightCol=wei)
     }
    }
    
@@ -256,14 +281,14 @@
    document.getElementById("prepOutputSpace").innerHTML = "Prepared Model: " + output
   }
 
-  function get_cat_feat(df, cat, catMinPrev=0.01, defaultValue=1, weightCol=null) {
-    if (weightCol === null) {
+  function get_cat_feat(df, cat, catMinPrev=0.01, defaultValue=1, weightCol="") {
+    if (weightCol === "") {
       df.forEach((d) => {
         d["WEIGHT_COL"] = 1;
       });
     } else {
       df.forEach((d) => {
-        d["WEIGHT_COL"] = d[weightCol];
+        d["WEIGHT_COL"] = parseFloat(d[weightCol]);
       });
     }
     
@@ -290,14 +315,14 @@
     return feat;
   }
 
-  function get_cont_feat(df, cont, contTargetPts=5, edge=0.01, defaultValue=1, weightCol=null) {
-    if (weightCol === null) {
+  function get_cont_feat(df, cont, contTargetPts=5, edge=0.01, defaultValue=1, weightCol="") {
+    if (weightCol === "") {
       df.forEach((d) => {
         d["WEIGHT_COL"] = 1;
       });
     } else {
       df.forEach((d) => {
-        d["WEIGHT_COL"] = d[weightCol];
+        d["WEIGHT_COL"] = parseFloat(d[weightCol]);
       });
     }
     
@@ -747,6 +772,7 @@
    model = JSON.parse(model)
    
    target = document.getElementById("trainResp").value
+   weight = document.getElementById("trainWei").value
    nrounds = document.getElementById("nrounds").value
    lr = document.getElementById("lr").value
    
@@ -757,20 +783,72 @@
    
    create_graphSpace()
    
-   train_model(data, target, nrounds, lr, model)
+   train_model(data, target, nrounds, lr, model, weight)
   }
+  
+  function crude_mult(arrayOfArrays, numbersArray){
+   
+   const resultArray = [];
+  
+   for (let i = 0; i < arrayOfArrays.length; i++) {
+   const innerArray = arrayOfArrays[i];
+   const multiplier = numbersArray[i];
 
-  function train_model(inputDf, target, nrounds, lr, model){
+   const multipliedArray = innerArray.map(value => value * multiplier);
+   resultArray.push(multipliedArray);
+   }
+   return resultArray
+  }
+  
+  function produce_wReleDict(releDict, wArray){
+   resultDict = {};
+
+   for (key in releDict) {
+    const arrayOfArrays = releDict[key]
+    const multipliedArrays = crude_mult(arrayOfArrays, wArray)
+    resultDict[key] = multipliedArrays
+   }
+   return resultDict
+  }
+  
+  function train_model(inputDf, target, nrounds, lr, model, weight = ""){
+   
+   wArray=[]
+   
+   if (weight === "") {
+    inputDf.forEach((d) => {
+     wArray.push(1);
+    });
+   } else {
+    inputDf.forEach((d) => {
+     wArray.push(parseFloat(d[weight]));
+    });
+   }
+   
+   console.log(wArray)
+   
    cord = produce_cont_relevances_dict(inputDf,model) //d(feat)/d(pt)
    card = produce_cat_relevances_dict(inputDf,model) //d(feat)/d(pt)
    
+   for (key in card) {
+     console.log(card[key])
+   }
+   
+   console.log(cord)
+   console.log(card)
+   
    tord = produce_total_relevances_dict(cord, card)
+   
+   cowrd = produce_wReleDict(cord, wArray)
+   cawrd = produce_wReleDict(card, wArray)
+   
+   towrd = produce_total_relevances_dict(cowrd, cawrd)
    
    resp = inputDf.map(d => d[target])
    
    i=0
    
-   function train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,resp){
+   function train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,cowrd,cawrd,towrd,resp){
     if (i==nrounds){
      document.getElementById("roundcount").innerHTML = String(nrounds)+"/"+String(nrounds)
      document.getElementById("outputSpace").innerHTML = "Trained Model: "+JSON.stringify(model)
@@ -793,10 +871,10 @@
        effectOfCol = contEffects[col]
        ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
        
-       finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),cord[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
+       finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),cowrd[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
        
        for (k in model['conts'][col]){
-        totRele = tord["conts"][col][k]
+        totRele = towrd["conts"][col][k]
         if (totRele>0){
          model["conts"][col][k][1] -= finalGradients[k]*lr/totRele
         }
@@ -809,12 +887,12 @@
        
        effectOfCol = catEffects[col]
        ceoc = math.dotDivide(pred,effectOfCol) //d(comb)/d(feat)
-       finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),card[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
+       finalGradients = math.multiply(math.dotMultiply(lossgradient,ceoc),cawrd[col]) //d(Loss)/d(pt) = d(Loss)/d(pred) * d(pred)/d(feat) * d(feat)/d(pt)
        
        skeys = getSortedKeys(model['cats'][col]["uniques"])
        
        for (k in skeys){
-        totRele = tord["cats"][col][k]
+        totRele = towrd["cats"][col][k]
         
         
         
@@ -823,7 +901,7 @@
         }
        }
        
-       totRele = tord["cats"][col][tord["cats"][col].length-1]
+       totRele = tord["cats"][col][towrd["cats"][col].length-1]
        if (totRele>0){
         model["cats"][col]["OTHER"] -= finalGradients[finalGradients.length-1]*lr/totRele
        }
@@ -832,10 +910,10 @@
      update_graphs(model)
      
      i++
-     setTimeout(train_one_step, 0, inputDf, target,nrounds,lr,model, i,cord,card,tord,resp)
+     setTimeout(train_one_step, 0, inputDf, target,nrounds,lr,model, i,cord,card,tord,cowrd,cawrd,towrd,resp)
      }
     }
-    train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,resp)
+    train_one_step(inputDf, target,nrounds,lr,model, i,cord,card,tord,cowrd,cawrd,towrd,resp)
   }
   
   //Functions for Predict
